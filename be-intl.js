@@ -41,7 +41,7 @@ export class BeIntl extends BE {
                 break;
             case 'time':
                 {
-                    propagator.addEventListener('datetime', e => {
+                    propagator.addEventListener('dateTime', e => {
                         const newVal = e.detail.newVal;
                         switch (typeof newVal) {
                             case 'string':
@@ -110,6 +110,10 @@ const xe = new XE({
             formatNumber: {
                 ifKeyIn: ['value'],
                 ifAllOf: ['intlNumberFormat']
+            },
+            formatDate: {
+                ifKeyIn: ['value'],
+                ifAllOf: ['intlDateFormat']
             },
             onFormattingChange: {
                 ifAllOf: ['locale'],

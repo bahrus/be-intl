@@ -1,8 +1,24 @@
 {
   "name": "be-intl",
   "version": "0.0.0",
+  "keywords": [
+    "web-components",
+    "web-component",
+    "custom-element",
+    "custom-elements"
+  ],
   "description": "Format numbers, dates automatically and semantically.",
-  "main": "index.js",
+  "main": "be-intl.js",
+  "module": "be-intl.js",
+  "exports": {
+    ".": "./be-intl.js",
+    "./be-intl.js": "./be-intl.js"
+  },
+  "files": [
+    "*.js",
+    "types.d.ts"
+  ],
+  "types": "types.d.ts",
   "scripts": {
     "test": "playwright test",
     "serve": "node node_modules/may-it-serve/serve.js",

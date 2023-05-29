@@ -46,7 +46,7 @@ export class BeIntl extends BE<AP, Actions, HTMLDataElement | HTMLTimeElement | 
             }
             break;
             case 'time':{
-                propagator.addEventListener('datetime', e => {
+                propagator.addEventListener('dateTime', e => {
                     const newVal = ((e as CustomEvent).detail as ProxyPropChangeInfo).newVal;
                     switch (typeof newVal) {
                         case 'string':
@@ -122,6 +122,10 @@ const xe = new XE<AP, Actions>({
             formatNumber: {
                 ifKeyIn: ['value'],
                 ifAllOf: ['intlNumberFormat']
+            },
+            formatDate: {
+                ifKeyIn: ['value'],
+                ifAllOf: ['intlDateFormat']
             },
             onFormattingChange:{
                 ifAllOf: ['locale'],
