@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "playwright test",
+    "serve": "node node_modules/may-it-serve/serve.js",
+    "safari": "npx playwright wk http://localhost:3030"
   },
   "dependencies": {
     "be-enhanced": "0.0.21",
     "be-hive": "0.0.95",
-    "trans-render": "0.0.682",
+    "be-propagating": "0.0.10",
+    "trans-render": "0.0.683",
     "xtal-element": "0.0.562"
   },
   "devDependencies": {
