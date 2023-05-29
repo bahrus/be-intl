@@ -1,7 +1,7 @@
 {
   "name": "be-intl",
   "version": "0.0.0",
-  "description": "",
+  "description": "Format numbers, dates automatically and semantically.",
   "main": "index.js",
   "scripts": {
     "test": "playwright test",

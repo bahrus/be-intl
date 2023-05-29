@@ -10,7 +10,8 @@ export class BeIntl extends BE<AP, Actions, HTMLDataElement | HTMLTimeElement | 
     static override get beConfig() {
         return {
             parse: true,
-            primaryProp: 'format'
+            primaryProp: 'format',
+            primaryPropReq: true,
         } as BEConfig
     }
 

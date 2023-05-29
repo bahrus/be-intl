@@ -5,7 +5,8 @@ export class BeIntl extends BE {
     static get beConfig() {
         return {
             parse: true,
-            primaryProp: 'format'
+            primaryProp: 'format',
+            primaryPropReq: true,
         };
     }
     async attach(enhancedElement, enhancementInfo) {
