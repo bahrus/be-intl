@@ -17,6 +17,16 @@ emits
 <data value=123456.789 lang="de-DE" be-intl='{ "style": "currency", "currency": "EUR" }'>123.456,79 €</data>
 ```
 
+```html
+<time lang="ar-EG" datetime=2011-11-18T14:54:39.929Z be-intl='{ "weekday": "long", "year": "numeric", "month": "long", "day": "numeric" }'></time>
+```
+
+emits
+
+```html
+<time lang="ar-EG" datetime="2011-11-18T14:54:39.929Z" be-intl="{ &quot;weekday&quot;: &quot;long&quot;, &quot;year&quot;: &quot;numeric&quot;, &quot;month&quot;: &quot;long&quot;, &quot;day&quot;: &quot;numeric&quot; }">الجمعة، ١٨ نوفمبر ٢٠١١</time>
+```
+
 ## Viewing Locally
 
 1.  Install git.

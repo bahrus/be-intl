@@ -118,7 +118,12 @@ const xe = new XE<AP, Actions>({
             ...propDefaults,
         },
         propInfo: {
-            ...propInfo
+            ...propInfo,
+            value: {
+                notify: {
+                    dispatch: true
+                }
+            }
         },
         actions: {
             formatNumber: {
