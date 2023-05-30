@@ -84,11 +84,13 @@ export class BeIntl extends BE {
         switch (enhancedElement.localName) {
             case 'time':
                 return {
-                    intlDateFormat: new Intl.DateTimeFormat(locale, format)
+                    intlDateFormat: new Intl.DateTimeFormat(locale, format),
+                    resolved: true
                 };
             default:
                 return {
-                    intlNumberFormat: new Intl.NumberFormat(locale, format)
+                    intlNumberFormat: new Intl.NumberFormat(locale, format),
+                    resolved: true
                 };
         }
     }

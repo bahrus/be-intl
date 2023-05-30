@@ -91,11 +91,13 @@ export class BeIntl extends BE<AP, Actions, HTMLDataElement | HTMLTimeElement | 
         switch(enhancedElement.localName){
             case 'time':
                 return {
-                    intlDateFormat: new Intl.DateTimeFormat(locale, format as Intl.DateTimeFormatOptions)
+                    intlDateFormat: new Intl.DateTimeFormat(locale, format as Intl.DateTimeFormatOptions),
+                    resolved: true
                 } 
             default:
                 return {
-                    intlNumberFormat: new Intl.NumberFormat(locale, format as Intl.NumberFormatOptions)
+                    intlNumberFormat: new Intl.NumberFormat(locale, format as Intl.NumberFormatOptions),
+                    resolved: true
                 }
         }
     }
