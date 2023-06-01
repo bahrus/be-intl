@@ -106,7 +106,12 @@ const xe = new XE({
             ...propDefaults,
         },
         propInfo: {
-            ...propInfo
+            ...propInfo,
+            value: {
+                notify: {
+                    dispatch: true
+                }
+            }
         },
         actions: {
             formatNumber: {
