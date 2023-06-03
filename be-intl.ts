@@ -76,7 +76,12 @@ export class BeIntl extends BE<AP, Actions, HTMLDataElement | HTMLTimeElement | 
     }
 
     formatNumber(self: this): void {
-        const {enhancedElement, value, intlNumberFormat} = self;
+        const {enhancedElement, value} = self;
+        if(value === undefined){
+            enhancedElement.textContent = '';
+            return;
+        }
+        const {intlNumberFormat} = self;
         enhancedElement.textContent = intlNumberFormat!.format(value as number);
 
     }

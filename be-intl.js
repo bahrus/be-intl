@@ -72,7 +72,12 @@ export class BeIntl extends BE {
         this.locale = enhancedElement.lang || defaultLocale;
     }
     formatNumber(self) {
-        const { enhancedElement, value, intlNumberFormat } = self;
+        const { enhancedElement, value } = self;
+        if (value === undefined) {
+            enhancedElement.textContent = '';
+            return;
+        }
+        const { intlNumberFormat } = self;
         enhancedElement.textContent = intlNumberFormat.format(value);
     }
     formatDate(self) {
