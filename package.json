@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "be-enhanced": "0.0.33",
-    "be-hive": "0.0.109",
-    "be-propagating": "0.0.19",
+    "be-hive": "0.0.110",
+    "be-propagating": "0.0.20",
     "trans-render": "0.0.693",
     "xtal-element": "0.0.571"
   },
