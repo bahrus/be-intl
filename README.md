@@ -51,3 +51,5 @@ import 'be-intl/be-intl.js';
     import 'https://esm.run/be-intl';
 </script>
 ```
+
+[TODO] aria-polite ?
