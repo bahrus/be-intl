@@ -17,6 +17,8 @@ emits
 <data value=123456.789 lang="de-DE" be-intl='{ "style": "currency", "currency": "EUR" }'>123.456,79 €</data>
 ```
 
+The output element provides identical support.
+
 ```html
 <time lang="ar-EG" datetime=2011-11-18T14:54:39.929Z be-intl='{ "weekday": "long", "year": "numeric", "month": "long", "day": "numeric" }'></time>
 ```

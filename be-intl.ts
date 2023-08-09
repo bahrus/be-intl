@@ -19,12 +19,13 @@ export class BeIntl extends BE<AP, Actions, HTMLDataElement | HTMLTimeElement | 
         await super.attach(enhancedElement, enhancementInfo);
         import('be-propagating/be-propagating.js');
         const base = await (<any>enhancedElement).beEnhanced.whenResolved('be-propagating') as bePropagatingAP;
-        const propagator = base.propagators!.get('self')!
+        const propagator = base.propagators!.get('self')!;
 
         propagator.addEventListener('lang', e => {
             this.locale = ((e as CustomEvent).detail as ProxyPropChangeInfo).newVal;
         });
-        switch (enhancedElement.localName) {
+        const {localName} = enhancedElement;
+        switch (localName) {
             case 'data':
             case 'output': {
                 propagator.addEventListener('value', e => {
@@ -43,9 +44,13 @@ export class BeIntl extends BE<AP, Actions, HTMLDataElement | HTMLTimeElement | 
                 if (val !== '') {
                     this.value = JSON.parse(val);
                 }
+                if(localName === 'data'){
+                    enhancedElement.ariaLive = 'polite';
+                }
             }
             break;
             case 'time':{
+                enhancedElement.ariaLive = 'polite';
                 propagator.addEventListener('dateTime', e => {
                     const newVal = ((e as CustomEvent).detail as ProxyPropChangeInfo).newVal;
                     switch (typeof newVal) {

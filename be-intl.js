@@ -17,7 +17,8 @@ export class BeIntl extends BE {
         propagator.addEventListener('lang', e => {
             this.locale = e.detail.newVal;
         });
-        switch (enhancedElement.localName) {
+        const { localName } = enhancedElement;
+        switch (localName) {
             case 'data':
             case 'output':
                 {
@@ -37,10 +38,14 @@ export class BeIntl extends BE {
                     if (val !== '') {
                         this.value = JSON.parse(val);
                     }
+                    if (localName === 'data') {
+                        enhancedElement.ariaLive = 'polite';
+                    }
                 }
                 break;
             case 'time':
                 {
+                    enhancedElement.ariaLive = 'polite';
                     propagator.addEventListener('dateTime', e => {
                         const newVal = e.detail.newVal;
                         switch (typeof newVal) {
