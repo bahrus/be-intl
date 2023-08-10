@@ -54,4 +54,3 @@ import 'be-intl/be-intl.js';
 </script>
 ```
 
-[TODO] aria-polite ?
