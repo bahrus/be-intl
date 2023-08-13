@@ -5,8 +5,9 @@ import { Actions, AllProps, AP, PAP, ProPAP } from './types';
 import { register } from 'be-hive/register.js';
 import { AP as bePropagatingAP } from 'be-propagating/types.js';
 import { ProxyPropChangeInfo } from 'trans-render/lib/types';
+import {BeValueAdded, beValueAddedActions, beValueAddedPropDefaults, beValueAddedPropInfo} from 'be-value-added/be-value-added.js';
 
-export class BeIntl extends BE<AP, Actions, HTMLDataElement | HTMLTimeElement | HTMLOutputElement> implements Actions {
+export class BeIntl extends BeValueAdded{
     static override get beConfig() {
         return {
             parse: true,
@@ -15,69 +16,28 @@ export class BeIntl extends BE<AP, Actions, HTMLDataElement | HTMLTimeElement | 
         } as BEConfig
     }
 
-    override  async attach(enhancedElement: HTMLDataElement | HTMLTimeElement | HTMLOutputElement, enhancementInfo: EnhancementInfo): Promise<void> {
-        await super.attach(enhancedElement, enhancementInfo);
-        import('be-propagating/be-propagating.js');
-        const base = await (<any>enhancedElement).beEnhanced.whenResolved('be-propagating') as bePropagatingAP;
-        const propagator = base.propagators!.get('self')!;
-
-        propagator.addEventListener('lang', e => {
-            this.locale = ((e as CustomEvent).detail as ProxyPropChangeInfo).newVal;
-        });
-        const {localName} = enhancedElement;
-        switch (localName) {
-            case 'data':
-            case 'output': {
-                propagator.addEventListener('value', e => {
-                    const newVal = ((e as CustomEvent).detail as ProxyPropChangeInfo).newVal;
-                    switch (typeof newVal) {
-                        case 'string':
-                            if (!newVal) {
-                                this.value = 0;
-                            }
-                            break;
-                        default:
-                            this.value = newVal;
-                    }
-                });
-                const val = (enhancedElement as HTMLDataElement | HTMLOutputElement).value;
-                if (val !== '') {
-                    this.value = JSON.parse(val);
-                }
-                if(localName === 'data'){
-                    enhancedElement.ariaLive = 'polite';
-                }
-            }
-            break;
-            case 'time':{
-                enhancedElement.ariaLive = 'polite';
-                propagator.addEventListener('dateTime', e => {
-                    const newVal = ((e as CustomEvent).detail as ProxyPropChangeInfo).newVal;
-                    switch (typeof newVal) {
-                        case 'string':
-                            try {
-                                this.value = new Date(newVal);
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        default:
-                            if (newVal instanceof Date) {
-                                this.value = newVal;
-                            }
-                    }
-                });
-                const val = (enhancedElement as HTMLTimeElement).dateTime;
-                if(val !== ''){
-                    try {
-                        this.value = new Date(val);
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }
-            }
-            break;
+    #langObserver: MutationObserver | undefined;
+    override hydrate(self: this){
+        const returnObj = super.hydrate(self) as PAP;
+        const {observeAttr} = self;
+        if(observeAttr){
+            const {enhancedElement} = self;
+            const mutOptions: MutationObserverInit = {
+                attributeFilter: ['lang'],
+                attributes: true
+            };
+            self.#langObserver = new MutationObserver((/*mutations: MutationRecord[]*/) => {
+                self.locale = enhancedElement.lang;
+            });
+            returnObj.locale = enhancedElement.lang;
+            self.#langObserver.observe(enhancedElement, mutOptions);
         }
-        this.locale = enhancedElement.lang || defaultLocale;
+        return returnObj;
+    }
+
+    override detach(detachedElement: HTMLLinkElement | HTMLMetaElement | HTMLDataElement | HTMLTimeElement | HTMLOutputElement): void {
+        super.detach(detachedElement);
+        if(this.#langObserver !== undefined) this.#langObserver.disconnect();
     }
 
     formatNumber(self: this): void {
@@ -125,17 +85,13 @@ const xe = new XE<AP, Actions>({
     config: {
         tagName,
         propDefaults: {
-            ...propDefaults,
+            ...beValueAddedPropDefaults,
         },
         propInfo: {
-            ...propInfo,
-            value: {
-                notify: {
-                    dispatch: true
-                }
-            }
+            ...beValueAddedPropInfo,
         },
         actions: {
+            ...beValueAddedActions,
             formatNumber: {
                 ifKeyIn: ['value'],
                 ifAllOf: ['intlNumberFormat']
@@ -154,4 +110,3 @@ const xe = new XE<AP, Actions>({
 });
 
 register(ifWantsToBe, upgrade, tagName);
-

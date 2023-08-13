@@ -1,13 +1,13 @@
 import { ActionOnEventConfigs } from "trans-render/froop/types";
 import {IBE, Declarations} from 'be-enhanced/types';
+import {BVAEndUserProps, BVAAllProps} from 'be-value-added/types';
 
-export interface EndUserProps extends IBE<HTMLDataElement | HTMLTimeElement | HTMLOutputElement>{
+export interface EndUserProps extends BVAEndUserProps<HTMLDataElement | HTMLTimeElement, number | Date | boolean>{
     format?: Intl.NumberFormatOptions | Intl.DateTimeFormatOptions,
-    value?: number | Date;
     locale?: string;
 }
 
-export interface AllProps extends EndUserProps{
+export interface AllProps extends EndUserProps, BVAAllProps{
     intlDateFormat?: Intl.DateTimeFormat,
     intlNumberFormat?: Intl.NumberFormat,
 }

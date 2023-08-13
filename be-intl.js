@@ -1,7 +1,7 @@
-import { BE, propDefaults, propInfo } from 'be-enhanced/BE.js';
 import { XE } from 'xtal-element/XE.js';
 import { register } from 'be-hive/register.js';
-export class BeIntl extends BE {
+import { BeValueAdded, beValueAddedActions, beValueAddedPropDefaults, beValueAddedPropInfo } from 'be-value-added/be-value-added.js';
+export class BeIntl extends BeValueAdded {
     static get beConfig() {
         return {
             parse: true,
@@ -9,72 +9,28 @@ export class BeIntl extends BE {
             primaryPropReq: true,
         };
     }
-    async attach(enhancedElement, enhancementInfo) {
-        await super.attach(enhancedElement, enhancementInfo);
-        import('be-propagating/be-propagating.js');
-        const base = await enhancedElement.beEnhanced.whenResolved('be-propagating');
-        const propagator = base.propagators.get('self');
-        propagator.addEventListener('lang', e => {
-            this.locale = e.detail.newVal;
-        });
-        const { localName } = enhancedElement;
-        switch (localName) {
-            case 'data':
-            case 'output':
-                {
-                    propagator.addEventListener('value', e => {
-                        const newVal = e.detail.newVal;
-                        switch (typeof newVal) {
-                            case 'string':
-                                if (!newVal) {
-                                    this.value = 0;
-                                }
-                                break;
-                            default:
-                                this.value = newVal;
-                        }
-                    });
-                    const val = enhancedElement.value;
-                    if (val !== '') {
-                        this.value = JSON.parse(val);
-                    }
-                    if (localName === 'data') {
-                        enhancedElement.ariaLive = 'polite';
-                    }
-                }
-                break;
-            case 'time':
-                {
-                    enhancedElement.ariaLive = 'polite';
-                    propagator.addEventListener('dateTime', e => {
-                        const newVal = e.detail.newVal;
-                        switch (typeof newVal) {
-                            case 'string':
-                                try {
-                                    this.value = new Date(newVal);
-                                }
-                                catch (e) {
-                                    console.error(e);
-                                }
-                            default:
-                                if (newVal instanceof Date) {
-                                    this.value = newVal;
-                                }
-                        }
-                    });
-                    const val = enhancedElement.dateTime;
-                    if (val !== '') {
-                        try {
-                            this.value = new Date(val);
-                        }
-                        catch (e) {
-                            console.error(e);
-                        }
-                    }
-                }
-                break;
+    #langObserver;
+    hydrate(self) {
+        const returnObj = super.hydrate(self);
+        const { observeAttr } = self;
+        if (observeAttr) {
+            const { enhancedElement } = self;
+            const mutOptions = {
+                attributeFilter: ['lang'],
+                attributes: true
+            };
+            self.#langObserver = new MutationObserver(( /*mutations: MutationRecord[]*/) => {
+                self.locale = enhancedElement.lang;
+            });
+            returnObj.locale = enhancedElement.lang;
+            self.#langObserver.observe(enhancedElement, mutOptions);
         }
-        this.locale = enhancedElement.lang || defaultLocale;
+        return returnObj;
+    }
+    detach(detachedElement) {
+        super.detach(detachedElement);
+        if (this.#langObserver !== undefined)
+            this.#langObserver.disconnect();
     }
     formatNumber(self) {
         const { enhancedElement, value } = self;
@@ -113,17 +69,13 @@ const xe = new XE({
     config: {
         tagName,
         propDefaults: {
-            ...propDefaults,
+            ...beValueAddedPropDefaults,
         },
         propInfo: {
-            ...propInfo,
-            value: {
-                notify: {
-                    dispatch: true
-                }
-            }
+            ...beValueAddedPropInfo,
         },
         actions: {
+            ...beValueAddedActions,
             formatNumber: {
                 ifKeyIn: ['value'],
                 ifAllOf: ['intlNumberFormat']
