@@ -18,20 +18,23 @@ export class BeIntl extends BeValueAdded{
 
     #langObserver: MutationObserver | undefined;
     override hydrate(self: this){
+        const {enhancedElement} = self;
         const returnObj = super.hydrate(self) as PAP;
         const {observeAttr} = self;
         if(observeAttr){
-            const {enhancedElement} = self;
+            
             const mutOptions: MutationObserverInit = {
                 attributeFilter: ['lang'],
                 attributes: true
             };
             self.#langObserver = new MutationObserver((/*mutations: MutationRecord[]*/) => {
-                self.locale = enhancedElement.lang;
+                self.locale = enhancedElement.lang  || defaultLocale;;
             });
-            returnObj.locale = enhancedElement.lang;
+            
             self.#langObserver.observe(enhancedElement, mutOptions);
         }
+        returnObj.locale = enhancedElement.lang  || defaultLocale;
+        delete returnObj.resolved;
         return returnObj;
     }
 
