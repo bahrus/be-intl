@@ -31,6 +31,8 @@ emits
 
 ## Viewing Locally
 
+Any web server than can serve static files will do, but...
+
 1.  Install git.
 2.  Fork/clone this repo.
 3.  Install node.

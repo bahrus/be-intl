@@ -29,9 +29,9 @@
     "be-enhanced": "0.0.38",
     "be-hive": "0.0.116",
     "be-propagating": "0.0.21",
-    "be-value-added": "0.0.1",
-    "trans-render": "0.0.701",
-    "xtal-element": "0.0.576"
+    "be-value-added": "0.0.2",
+    "trans-render": "0.0.702",
+    "xtal-element": "0.0.577"
   },
   "devDependencies": {
     "may-it-serve": "0.0.5",
