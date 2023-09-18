@@ -29,6 +29,8 @@ emits
 <time lang="ar-EG" datetime="2011-11-18T14:54:39.929Z" be-intl="{ &quot;weekday&quot;: &quot;long&quot;, &quot;year&quot;: &quot;numeric&quot;, &quot;month&quot;: &quot;long&quot;, &quot;day&quot;: &quot;numeric&quot; }">الجمعة، ١٨ نوفمبر ٢٠١١</time>
 ```
 
+[TODO] Support [expanding out the attribute](https://github.com/bahrus/be-hive#behivior-aspects-untested) to avoid use of JSON
+
 ## Viewing Locally
 
 Any web server than can serve static files will do, but...
