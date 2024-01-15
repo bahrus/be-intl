@@ -26,12 +26,12 @@
     "update": "ncu -u && npm install"
   },
   "dependencies": {
-    "be-enhanced": "0.0.60",
-    "be-hive": "0.0.131",
-    "be-propagating": "0.0.30",
-    "be-value-added": "0.0.20",
-    "trans-render": "0.0.728",
-    "xtal-element": "0.0.585"
+    "be-enhanced": "0.0.61",
+    "be-hive": "0.0.132",
+    "be-propagating": "0.0.31",
+    "be-value-added": "0.0.21",
+    "trans-render": "0.0.730",
+    "xtal-element": "0.0.587"
   },
   "devDependencies": {
     "may-it-serve": "0.0.6",
