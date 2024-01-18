@@ -26,16 +26,16 @@
     "update": "ncu -u && npm install"
   },
   "dependencies": {
-    "be-enhanced": "0.0.61",
-    "be-hive": "0.0.132",
-    "be-propagating": "0.0.31",
-    "be-value-added": "0.0.21",
-    "trans-render": "0.0.730",
-    "xtal-element": "0.0.587"
+    "be-enhanced": "0.0.62",
+    "be-hive": "0.0.133",
+    "be-propagating": "0.0.32",
+    "be-value-added": "0.0.22",
+    "trans-render": "0.0.732",
+    "xtal-element": "0.0.591"
   },
   "devDependencies": {
     "may-it-serve": "0.0.6",
-    "@playwright/test": "1.40.1"
+    "@playwright/test": "1.41.0"
   },
   "author": "anderson.bruce.b@gmail.com",
   "license": "MIT"
