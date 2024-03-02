@@ -19,6 +19,8 @@ export class BeIntl extends BeValueAdded{
     override hydrate(self: this){
         const {enhancedElement} = self;
         const returnObj = super.hydrate(self) as PAP;
+        if(!(enhancedElement instanceof HTMLElement)) return returnObj;
+        
         const {observeAttr} = self;
         if(observeAttr){
             
@@ -109,5 +111,3 @@ const xe = new XE<AP, Actions>({
     },
     superclass: BeIntl
 });
-
-register(ifWantsToBe, upgrade, tagName);

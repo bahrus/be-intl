@@ -5,6 +5,7 @@ import {BVAEndUserProps, BVAAllProps} from 'be-value-added/types';
 export interface EndUserProps extends BVAEndUserProps{
     format?: Intl.NumberFormatOptions | Intl.DateTimeFormatOptions,
     locale?: string;
+    observeAttr?: string;
 }
 
 export interface AllProps extends EndUserProps, BVAAllProps{

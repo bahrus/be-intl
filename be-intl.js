@@ -12,6 +12,8 @@ export class BeIntl extends BeValueAdded {
     hydrate(self) {
         const { enhancedElement } = self;
         const returnObj = super.hydrate(self);
+        if (!(enhancedElement instanceof HTMLElement))
+            return returnObj;
         const { observeAttr } = self;
         if (observeAttr) {
             const mutOptions = {
@@ -91,4 +93,3 @@ const xe = new XE({
     },
     superclass: BeIntl
 });
-register(ifWantsToBe, upgrade, tagName);
