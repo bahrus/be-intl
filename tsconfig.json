@@ -9,7 +9,7 @@
 		"strict": true,
 	},
 	"files":[
-		"be-intl.ts"
+		"behivior.ts"
 	],
 	"exclude":[
 		"node_modules"

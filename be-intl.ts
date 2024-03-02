@@ -2,7 +2,6 @@ import { BE, propDefaults, propInfo } from 'be-enhanced/BE.js';
 import { BEConfig, EnhancementInfo } from 'be-enhanced/types';
 import { XE } from 'xtal-element/XE.js';
 import { Actions, AllProps, AP, PAP, ProPAP } from './types';
-import { register } from 'be-hive/register.js';
 import { AP as bePropagatingAP } from 'be-propagating/types.js';
 import { ProxyPropChangeInfo } from 'trans-render/lib/types';
 import {BeValueAdded, beValueAddedActions, beValueAddedPropDefaults, beValueAddedPropInfo} from 'be-value-added/be-value-added.js';
@@ -80,9 +79,8 @@ const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
 
 export interface BeIntl extends AllProps { }
 
-const tagName = 'be-intl';
-const ifWantsToBe = 'intl';
-const upgrade = 'data,time,output';
+export const tagName = 'be-intl';
+
 
 const xe = new XE<AP, Actions>({
     config: {

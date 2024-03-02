@@ -1,5 +1,4 @@
 import { XE } from 'xtal-element/XE.js';
-import { register } from 'be-hive/register.js';
 import { BeValueAdded, beValueAddedActions, beValueAddedPropDefaults, beValueAddedPropInfo } from 'be-value-added/be-value-added.js';
 export class BeIntl extends BeValueAdded {
     static get beConfig() {
@@ -64,9 +63,7 @@ export class BeIntl extends BeValueAdded {
     }
 }
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
-const tagName = 'be-intl';
-const ifWantsToBe = 'intl';
-const upgrade = 'data,time,output';
+export const tagName = 'be-intl';
 const xe = new XE({
     config: {
         tagName,
