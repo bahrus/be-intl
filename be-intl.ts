@@ -11,6 +11,7 @@ export class BeIntl extends BeValueAdded implements Actions{
             format:{},
             intlDateFormat: {},
             intlNumberFormat: {},
+            currency: {},
         },
         actions: {
             hydrate: {
@@ -26,7 +27,7 @@ export class BeIntl extends BeValueAdded implements Actions{
             },
             onFormattingChange:{
                 ifAllOf: ['locale'],
-                ifKeyIn: ['format']
+                ifKeyIn: ['format', 'currency']
             }
         },
         positractions: [
@@ -50,7 +51,7 @@ export class BeIntl extends BeValueAdded implements Actions{
     }
 
     onFormattingChange(self: this): PAP {
-        const {enhancedElement, locale, format} = self;
+        const {enhancedElement, locale, format, currency} = self;
         switch(enhancedElement.localName){
             case 'time':
                 return {
@@ -58,6 +59,7 @@ export class BeIntl extends BeValueAdded implements Actions{
                     resolved: true
                 } 
             default:
+                if(currency !== undefined) (<any>format).currency = currency;
                 return {
                     intlNumberFormat: new Intl.NumberFormat(locale, format as Intl.NumberFormatOptions),
                     resolved: true

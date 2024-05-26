@@ -6,11 +6,20 @@ const base = 'be-intl';
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
 const emc: EnhancementMountCnfg = {
     base,
+    branches: ['', 'style', 'currency', ],
     map: {
         '0.0': {
             instanceOf: 'Object',
             mapsTo: 'format',
             valIfFalsy: {},
+        },
+        '1.0': {
+            instanceOf: 'String',
+            mapsTo: '?.format?.style'
+        },
+        '2.0': {
+            instanceOf: 'String',
+            mapsTo: '?.format?.currency'
         }
     },
     osotas: [

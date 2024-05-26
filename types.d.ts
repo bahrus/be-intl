@@ -5,6 +5,7 @@ export interface EndUserProps extends BVAEndUserProps{
     format?: Intl.NumberFormatOptions | Intl.DateTimeFormatOptions,
     locale?: string;
     observeAttr?: string;
+    currency?: string;
 }
 
 export interface AllProps extends EndUserProps, BVAAllProps{
