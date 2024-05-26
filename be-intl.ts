@@ -7,7 +7,10 @@ export class BeIntl extends BeValueAdded implements Actions{
     static override config: BEConfig<AP & BEAllProps, Actions & IEnhancement, any> = {
         propInfo: {
             ...(super.config.propInfo),
-            locale:{}
+            locale:{},
+            format:{},
+            intlDateFormat: {},
+            intlNumberFormat: {},
         },
         actions: {
             hydrate: {

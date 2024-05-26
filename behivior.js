@@ -7,7 +7,7 @@ const emc = {
     map: {
         '0.0': {
             instanceOf: 'Object',
-            mapsTo: '.'
+            mapsTo: 'format'
         }
     },
     osotas: [

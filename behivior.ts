@@ -9,7 +9,7 @@ const emc: EnhancementMountCnfg = {
     map: {
         '0.0': {
             instanceOf: 'Object',
-            mapsTo: '.'
+            mapsTo: 'format'
         }
     },
     osotas: [

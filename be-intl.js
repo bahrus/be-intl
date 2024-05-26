@@ -3,7 +3,10 @@ export class BeIntl extends BeValueAdded {
     static config = {
         propInfo: {
             ...(super.config.propInfo),
-            locale: {}
+            locale: {},
+            format: {},
+            intlDateFormat: {},
+            intlNumberFormat: {},
         },
         actions: {
             hydrate: {
