@@ -4,5 +4,9 @@ import {Actions, AllProps, AP, ProPAP, PAP} from './types';
 import {IEnhancement,  BEAllProps} from 'trans-render/be/types';
 
 export class BeIntl extends BE implements Actions{
-    
+
 }
+
+const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
+
+export interface BeIntl extends AllProps { }
