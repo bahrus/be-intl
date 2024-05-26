@@ -3,6 +3,7 @@ import {MountObserver, MOSE} from 'mount-observer/MountObserver.js';
 
 const base = 'be-intl';
 
+const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
 const emc: EnhancementMountCnfg = {
     base,
     map: {
@@ -11,6 +12,13 @@ const emc: EnhancementMountCnfg = {
             mapsTo: '.'
         }
     },
+    osotas: [
+        {
+            name: 'lang',
+            valIfNull: defaultLocale,
+            mapsTo: 'locale',
+        }
+    ],
     enhPropKey: 'beIntl',
     importEnh: async () => {
         const {BeIntl} = await import('./behance.js');

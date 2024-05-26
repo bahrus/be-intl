@@ -1,6 +1,7 @@
 import { BeHive } from 'be-hive/be-hive.js';
 import { MountObserver } from 'mount-observer/MountObserver.js';
 const base = 'be-intl';
+const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
 const emc = {
     base,
     map: {
@@ -9,6 +10,13 @@ const emc = {
             mapsTo: '.'
         }
     },
+    osotas: [
+        {
+            name: 'lang',
+            valIfNull: defaultLocale,
+            mapsTo: 'locale',
+        }
+    ],
     enhPropKey: 'beIntl',
     importEnh: async () => {
         const { BeIntl } = await import('./behance.js');
