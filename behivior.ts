@@ -4,7 +4,7 @@ import {MountObserver, MOSE} from 'mount-observer/MountObserver.js';
 const base = 'be-intl';
 
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
-const emc: EnhancementMountCnfg = {
+export const emc: EnhancementMountCnfg = {
     base,
     branches: ['', 'style', 'currency', ],
     map: {

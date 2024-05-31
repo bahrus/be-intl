@@ -2,7 +2,7 @@ import { BeHive } from 'be-hive/be-hive.js';
 import { MountObserver } from 'mount-observer/MountObserver.js';
 const base = 'be-intl';
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
-const emc = {
+export const emc = {
     base,
     branches: ['', 'style', 'currency',],
     map: {
