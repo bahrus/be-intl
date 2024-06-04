@@ -27,9 +27,9 @@
   },
   "dependencies": {
     "be-enhanced": "0.0.97",
-    "be-hive": "0.0.169",
-    "be-propagating": "0.0.42",
-    "be-value-added": "0.0.33",
+    "be-hive": "0.0.170",
+    "be-propagating": "0.0.43",
+    "be-value-added": "0.0.34",
     "mount-observer": "0.0.27",
     "trans-render": "0.0.779"
   },
