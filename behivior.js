@@ -1,9 +1,7 @@
-import { BeHive } from 'be-hive/be-hive.js';
-import { MountObserver } from 'mount-observer/MountObserver.js';
-const base = 'be-intl';
+import { BeHive, MountObserver, seed } from 'be-hive/be-hive.js';
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
 export const emc = {
-    base,
+    base: 'be-intl',
     branches: ['', 'style', 'currency',],
     map: {
         '0.0': {
@@ -33,7 +31,5 @@ export const emc = {
         return BeIntl;
     }
 };
-const mose = document.createElement('script');
-mose.id = base;
-mose.synConfig = emc;
+const mose = seed(emc);
 MountObserver.synthesize(document, BeHive, mose);

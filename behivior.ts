@@ -1,11 +1,9 @@
-import {BeHive, EnhancementMountCnfg} from 'be-hive/be-hive.js';
-import {MountObserver, MOSE} from 'mount-observer/MountObserver.js';
+import {BeHive, MountObserver, EMC, seed} from 'be-hive/be-hive.js';
 
-const base = 'be-intl';
 
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
-export const emc: EnhancementMountCnfg = {
-    base,
+export const emc: EMC = {
+    base: 'be-intl',
     branches: ['', 'style', 'currency', ],
     map: {
         '0.0': {
@@ -36,8 +34,6 @@ export const emc: EnhancementMountCnfg = {
     }
 };
 
-const mose = document.createElement('script') as MOSE<EnhancementMountCnfg>;
-mose.id = base;
-mose.synConfig = emc;
+const mose = seed(emc);
 
 MountObserver.synthesize(document, BeHive, mose);

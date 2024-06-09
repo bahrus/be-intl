@@ -31,7 +31,7 @@ export class BeIntl extends BeValueAdded implements Actions{
             }
         },
         positractions: [
-            ...(super.config.positractions)
+            ...(super.config.positractions!)
         ]
     }
     formatNumber(self: this): void {
