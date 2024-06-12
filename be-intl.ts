@@ -3,7 +3,7 @@ import {BE, BEConfig} from 'be-enhanced/BE.js';
 import {Actions, AllProps, AP, ProPAP, PAP} from './types';
 import {IEnhancement,  BEAllProps} from 'trans-render/be/types';
 import {BeValueAdded} from 'be-value-added/be-value-added.js';
-export class BeIntl extends BeValueAdded implements Actions{
+class BeIntl extends BeValueAdded implements Actions{
     static override config: BEConfig<AP & BEAllProps, Actions & IEnhancement, any> = {
         propInfo: {
             ...(super.config.propInfo),
@@ -70,4 +70,8 @@ export class BeIntl extends BeValueAdded implements Actions{
 
 
 
-export interface BeIntl extends AllProps { }
+interface BeIntl extends AllProps { }
+
+await BeIntl.bootUp();
+
+export {BeIntl}

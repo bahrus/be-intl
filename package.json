@@ -12,7 +12,8 @@
   "module": "be-intl.js",
   "exports": {
     ".": "./be-intl.js",
-    "./be-intl.js": "./be-intl.js"
+    "./be-intl.js": "./be-intl.js",
+    "./behivior.js": "./behivior.js"
   },
   "files": [
     "*.js",

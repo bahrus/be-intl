@@ -27,7 +27,7 @@ export const emc = {
     ],
     enhPropKey: 'beIntl',
     importEnh: async () => {
-        const { BeIntl } = await import('./behance.js');
+        const { BeIntl } = await import('./be-intl.js');
         return BeIntl;
     }
 };

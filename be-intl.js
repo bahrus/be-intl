@@ -1,5 +1,5 @@
 import { BeValueAdded } from 'be-value-added/be-value-added.js';
-export class BeIntl extends BeValueAdded {
+class BeIntl extends BeValueAdded {
     static config = {
         propInfo: {
             ...(super.config.propInfo),
@@ -61,3 +61,5 @@ export class BeIntl extends BeValueAdded {
         }
     }
 }
+await BeIntl.bootUp();
+export { BeIntl };
