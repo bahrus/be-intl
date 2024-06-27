@@ -14,6 +14,7 @@ class BeIntl extends BeValueAdded implements Actions{
             currency: {},
         },
         actions: {
+            ...(super.config.actions),
             hydrate: {
                 ifAllOf: ['attached'],
             },
