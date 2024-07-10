@@ -1,4 +1,4 @@
-# be-intl
+# be-intl (🌏)
 
 Format numbers, dates automatically and semantically.
 
