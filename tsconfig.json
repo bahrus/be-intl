@@ -7,6 +7,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"newLine": "LF",
 		"strict": true,
+		"skipLibCheck": true
 	},
 	"files":[
 		"behivior.ts"
