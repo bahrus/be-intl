@@ -37,13 +37,13 @@ We can also employ more semantic syntax:
 <data value=123456.789 lang="de-DE" be-intl-style=currency be-intl-currency=EUR></data>
 ```
 
-## Alternative names
+## Alternative names [TODO]
 
 This involves a lot of typing out of the letters "be-intl".  To avoid blisters on your itty bitty fingers, we provide an alternative base attribute you can use:
 
 ```html
 <time lang="ar-EG" datetime="2011-11-18T14:54:39.929Z"
-🌐-weekday=long 🌐-year=numeric 🌐-month=long 🌐-day=numeric>الجمعة، ١٨ نوفمبر ٢٠١١</time>
+🌐-weekday=long 🌐-year=numeric 🌐-month=long 🌐-day=numeric></time>
 ```
 
 ## Viewing Locally
