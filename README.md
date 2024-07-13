@@ -37,7 +37,7 @@ We can also employ more semantic syntax:
 <data value=123456.789 lang="de-DE" be-intl-style=currency be-intl-currency=EUR></data>
 ```
 
-## Alternative names [TODO]
+## Alternative names
 
 The semantic example above involves a lot of keyboard tapping of the letters "be-intl".  To avoid blisters on your itty bitty fingers, we provide an alternative base attribute you can use:
 
