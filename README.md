@@ -39,7 +39,7 @@ We can also employ more semantic syntax:
 
 ## Alternative names [TODO]
 
-This involves a lot of typing out of the letters "be-intl".  To avoid blisters on your itty bitty fingers, we provide an alternative base attribute you can use:
+The semantic example above involves a lot of keyboard tapping of the letters "be-intl".  To avoid blisters on your itty bitty fingers, we provide an alternative base attribute you can use:
 
 ```html
 <time lang="ar-EG" datetime="2011-11-18T14:54:39.929Z"

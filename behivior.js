@@ -2,7 +2,7 @@ import { BeHive, MountObserver, seed } from 'be-hive/be-hive.js';
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
 export const emc = {
     base: 'be-intl',
-    branches: ['', 'style', 'currency',],
+    branches: ['', 'style', 'currency', 'weekday', 'year', 'month', 'day'],
     map: {
         '0.0': {
             instanceOf: 'Object',
@@ -16,6 +16,22 @@ export const emc = {
         '2.0': {
             instanceOf: 'String',
             mapsTo: '?.format?.currency'
+        },
+        '3.0': {
+            instanceOf: 'String',
+            mapsTo: '?.format?.weekday'
+        },
+        '4.0': {
+            instanceOf: 'String',
+            mapsTo: '?.format?.year'
+        },
+        '5.0': {
+            instanceOf: 'String',
+            mapsTo: '?.format?.month'
+        },
+        '6.0': {
+            instanceOf: 'String',
+            mapsTo: '?.format?.day'
         }
     },
     osotas: [
