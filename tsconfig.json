@@ -10,7 +10,7 @@
 		"skipLibCheck": true
 	},
 	"files":[
-		"🌐.ts"
+		"🌐.void"
 	],
 	"exclude":[
 		"node_modules"
