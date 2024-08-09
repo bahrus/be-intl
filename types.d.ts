@@ -1,5 +1,4 @@
-import { ActionOnEventConfigs } from "trans-render/froop/types";
-import {BVAEndUserProps, BVAAllProps, BVAActions} from 'be-value-added/types';
+import {BVAEndUserProps, BVAAllProps, BVAActions} from './ts-refs/be-value-added/types';
 
 export interface EndUserProps extends BVAEndUserProps{
     format?: Intl.NumberFormatOptions | Intl.DateTimeFormatOptions,
@@ -20,7 +19,6 @@ export type PAP = Partial<AP>;
 
 export type ProPAP = Promise<PAP>;
 
-export type POA = [PAP | undefined, ActionOnEventConfigs<PAP, Actions>];
 
 export interface Actions extends BVAActions {
     formatNumber(self: this): void;
