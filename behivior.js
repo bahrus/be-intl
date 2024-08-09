@@ -1,5 +1,11 @@
+// @ts-check
 import { BeHive, MountObserver, seed } from 'be-hive/be-hive.js';
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
+/** @import {EMC} from './ts-refs/trans-render/be/types.d.ts' */
+
+/**
+ * @type {EMC}
+ */
 export const emc = {
     base: 'be-intl',
     branches: ['', 'style', 'currency', 'weekday', 'year', 'month', 'day'],
@@ -43,7 +49,10 @@ export const emc = {
     ],
     enhPropKey: 'beIntl',
     importEnh: async () => {
-        const { BeIntl } = await import('./be-intl.js');
+        const { BeIntl } = 
+        /** @type {{new(): IEnhancement<Element>}} */ 
+        /** @type {any} */
+        (await import('./be-intl.js'));
         return BeIntl;
     }
 };
