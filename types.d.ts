@@ -1,4 +1,5 @@
 import {BVAEndUserProps, BVAAllProps, BVAActions} from './ts-refs/be-value-added/types';
+import {BEAllProps} from './ts-refs/be-enhanced/types';
 
 export interface EndUserProps extends BVAEndUserProps{
     format?: Intl.NumberFormatOptions | Intl.DateTimeFormatOptions,
@@ -10,7 +11,7 @@ export interface EndUserProps extends BVAEndUserProps{
 export interface AllProps extends EndUserProps, BVAAllProps{
     attached?: boolean;
     intlDateFormat?: Intl.DateTimeFormat,
-    intlNumberFormat?: Intl.NumberFormat,
+    intlNumberFormat: Intl.NumberFormat,
 }
 
 export type AP = AllProps;
@@ -21,7 +22,7 @@ export type ProPAP = Promise<PAP>;
 
 
 export interface Actions extends BVAActions {
-    formatNumber(self: this): void;
+    formatNumber(self: AP & BEAllProps): void;
     formatDate(self: this): void;
     onFormattingChange(self: this): PAP;
 }
