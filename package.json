@@ -29,7 +29,7 @@
   "dependencies": {
     "be-enhanced": "0.0.131",
     "be-hive": "0.0.201",
-    "be-propagating": "0.0.56",
+    "be-propagating": "0.0.57",
     "be-value-added": "0.0.50",
     "trans-render": "0.0.821"
   },
