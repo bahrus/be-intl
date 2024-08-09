@@ -1,8 +1,19 @@
+// @ts-check
+import { propInfo, rejected, resolved } from 'be-enhanced/cc.js';
 import { BeValueAdded } from 'be-value-added/be-value-added.js';
+/** @import {Actions, AllProps} from './types' */
+/** @import {BEConfig, IEnhancement, BEAllProps} from './ts-refs/be-enhanced/types.d.ts' */
+
+/**
+ * @implements {Actions}
+ */
 class BeIntl extends BeValueAdded {
+    /**
+     * @type {BEConfig<AllProps & BEAllProps, Actions & IEnhancement>}
+     */
     static config = {
         propInfo: {
-            ...(super.config.propInfo),
+            ...propInfo,
             locale: {},
             format: {},
             intlDateFormat: {},
@@ -10,7 +21,7 @@ class BeIntl extends BeValueAdded {
             currency: {},
         },
         actions: {
-            ...(super.config.actions),
+            resolved, rejected,
             hydrate: {
                 ifAllOf: ['attached'],
             },
