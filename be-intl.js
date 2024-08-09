@@ -21,7 +21,7 @@ class BeIntl extends BeValueAdded {
             currency: {},
         },
         actions: {
-            resolved, rejected,
+            
             hydrate: {
                 ifAllOf: ['attached'],
             },
@@ -39,7 +39,7 @@ class BeIntl extends BeValueAdded {
             }
         },
         positractions: [
-            ...(super.config.positractions)
+            resolved, rejected,
         ]
     };
     formatNumber(self) {
