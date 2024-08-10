@@ -1,8 +1,10 @@
 // @ts-check
 import { propInfo, rejected, resolved } from 'be-enhanced/cc.js';
 import { BeValueAdded } from 'be-value-added/be-value-added.js';
-/** @import {Actions, AP} from './types' */
+/** @import {Actions, AP} from './ts-refs/be-intl/types' */
 /** @import {BEConfig, IEnhancement, BEAllProps} from './ts-refs/be-enhanced/types.d.ts' */
+/** @import {Positraction, PropLookup, PropInfo} from './ts-refs/trans-render/froop/types.d.ts' */
+/** @import {BVAActions, BVAAllProps, BVAP} from './ts-refs/be-value-added/types' */;
 
 /**
  * @implements {Actions}
@@ -39,7 +41,10 @@ class BeIntl extends BeValueAdded {
             }
         },
         positractions: [
-            resolved, rejected,
+            /** @type {Positraction<BVAP & BEAllProps>} */
+            (resolved), 
+            /** @type {Positraction<BVAP & BEAllProps>} */
+            (rejected),
         ]
     };
     /**

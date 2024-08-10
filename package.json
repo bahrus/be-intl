@@ -19,7 +19,7 @@
     "*.js",
     "types.d.ts"
   ],
-  "types": "types.d.ts",
+  "types": "./ts-refs/types.d.ts",
   "scripts": {
     "test": "playwright test",
     "serve": "node node_modules/may-it-serve/serve.js",
