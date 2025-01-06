@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <!-- #include virtual="/imports.html" -->
 </head>
 <body>
     <data 🌐 value="12345"></data>
@@ -15,19 +16,7 @@
     
     <data value=987654.72 lang="de-DE" 🌐-style=currency 🌐-currency=JPY></data>
     <!--<link itemprop="isVegetarian" href="https://schema.org/True"> -->
-    <script type=importmap>
-        {
-            "imports": {
-                "be-enhanced/": "/node_modules/be-enhanced/",
-                "be-hive/":  "/node_modules/be-hive/",
-                "be-propagating/": "/node_modules/be-propagating/",
-                "be-value-added/": "/node_modules/be-value-added/",
-                "mount-observer/": "/node_modules/mount-observer/",
-                "trans-render/": "/node_modules/trans-render/",
-                "xtal-element/": "/node_modules/xtal-element/"
-            }
-        }
-    </script>
+
     <script type=module>
         import '/🌐.js'
     </script>

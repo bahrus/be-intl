@@ -1,7 +1,7 @@
 // @ts-check
 import { BeHive, MountObserver, seed } from 'be-hive/be-hive.js';
 const defaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
-/** @import {EMC} from './ts-refs/trans-render/be/types.d.ts' */
+/** @import {EMC} from './ts-refs/trans-render/be/types' */
 
 /**
  * @type {EMC}
