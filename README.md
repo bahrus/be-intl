@@ -54,8 +54,9 @@ The semantic example above involves a lot of keyboard tapping of the letters "be
 5. > git submodule add https://github.com/bahrus/types.git types
 6. > git submodule update --init --recursive
 7. > npm install
-8. > npm run serve
-9. Open http://localhost:8000/demo/ in a modern browser
+8. > npm run build
+9. > npm run serve
+10. Open http://localhost:8000/demo/ in a modern browser
 
 ## Running Tests
 

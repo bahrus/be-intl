@@ -1,0 +1,71 @@
+{
+    "enhConfig": {
+        "enhKey": "🌐",
+        "spawn": "be-intl/be-intl.js",
+        "withAttrs": {
+            "base": "🌐",
+            "_base": {
+                "mapsTo": "format",
+                "instanceOf": "Object",
+                "valIfNull": {}
+            },
+            "style": "${base}-style",
+            "currency": "${base}-currency",
+            "weekday": "${base}-weekday",
+            "year": "${base}-year",
+            "month": "${base}-month",
+            "day": "${base}-day",
+            "observeLang": "${base}-observe-lang",
+            "_observeLang": {
+                "instanceOf": "Boolean"
+            }
+        }
+    },
+    "customData": {
+        "weakRef": {
+            "properties": [
+                "enhancedElement"
+            ]
+        },
+        "actions": {
+            "hydrate": {
+                "ifAllOf": [
+                    "enhancedElement",
+                    "initialized"
+                ],
+                "ifKeyIn": [
+                    "initialized"
+                ]
+            },
+            "onFormattingChange": {
+                "ifAllOf": [
+                    "locale",
+                    "initialized"
+                ],
+                "ifKeyIn": [
+                    "locale",
+                    "format",
+                    "initialized"
+                ]
+            },
+            "formatNumber": {
+                "ifAllOf": [
+                    "intlNumberFormat"
+                ],
+                "ifKeyIn": [
+                    "value",
+                    "intlNumberFormat"
+                ]
+            },
+            "formatDate": {
+                "ifAllOf": [
+                    "intlDateFormat"
+                ],
+                "ifKeyIn": [
+                    "value",
+                    "intlDateFormat"
+                ]
+            }
+        }
+    }
+}
