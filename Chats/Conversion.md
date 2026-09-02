@@ -47,7 +47,7 @@ To avoid depending on assignment order, the semantic sub-attributes (`style`, `c
 Legacy `be-intl` `extends BeValueAdded`, which is itself a full enhancement (reads a `value` off `<data>/<time>/<output>/<meta>/<link>`, coerces it — `JSON.parse` for data, `new Date()` for time — mirrors it back to the DOM on change, sets `aria-live`, and optionally watches attribute/`textContent` mutations via `beVigilant`). The modern architecture has no enhancement inheritance, and no reference conversion pulls another `be-*` in as a library, so this was **not** reproduced by composition.
 
 Instead the class:
-- reads the value itself in a small `readValue()` helper — `new Date(el.dateTime)` for `<time>`, `Number(el.value)` (falling back to the raw string) otherwise;
+- reads the value through `(await infer(el)).value` — a live, type-coerced read living in `inferencer` (`Date` for `<time>`, `number` for `<data>`/`<output>`). *(Originally a local `readValue()` helper; removed in Response V once `inferencer.value` was fixed — see below.)*
 - sets `enhancedElement.ariaLive = 'polite'` directly (the one `BeValueAdded.hydrate` side-effect that matters here);
 - gets an `inferencer` `Infer` instance and uses `getPropagator()` to re-run formatting when the element's value/`dateTime` property changes (this is the modern replacement for the `beVigilant` MutationObserver).
 
@@ -77,3 +77,319 @@ Instead the class:
 ### Not done (as requested)
 
 - No unit / Playwright tests were run or written. `tests/test1.html` + `tests/test1.spec.mjs` were updated to the new loading pattern but not executed. Suggested first check once you're ready: `npm run build && npm run serve`, open `/demo/dev.html`, confirm the four samples render, then `npm test`.
+
+## Bruce's Response I
+
+The Unit test passes!
+
+You raised an interesting point about replacing be-value-added with inferencer.  I believe that was one of my goals of introducing inferencer at such a core level.  But in testing the inferencer enhancement which is getting attached, I don't think it is fully mature, and I would like to take this opportunity to make it match what I recall be-value-added feature wise.  I'm thinking it's possible that if we fix the inferencer library the way I think it should be fixed, we might be able to reduce some redundant code in this package (be-intl) but that is a secondary goal.
+
+I've temporarily brought in the assign-gingerly package / source code, so that I can ask you to fix issues I'm seeing directly.  
+
+I've temporarily pointed import.html to the local package.
+
+So the first issue I see:
+
+When I open http://localhost:8000/demo/dev.html and inspect each of the elements adorned by be-intl, when I evaluate:
+
+```JS
+$0.enh.inferencer.value
+```
+
+I'm getting undefined.  I expect it to be typed based on the element type:
+
+If the element is data and the value isn't true or false, it should return the numeric value. 
+
+I do find that:
+
+```JS
+$0.enh.inferencer.value = 17
+```
+
+does behave more like I remember be-value-added acting.  But that may still need some fine tuning, which we will get to later.
+
+Can you please fix the issue of $0.enh.inferencer.value being undefined?
+
+## Claude's Response II
+
+### Root cause
+
+`Infer` had a write-only `value`: the getter just returned a private `#value` field that
+was only ever populated by the setter. It never read anything off the element, so
+`$0.enh.inferencer.value` is `undefined` until you assign to it. `be-value-added`, by
+contrast, always *derived* `value` from the DOM (`parseAttr`).
+
+### Fix (in `node_modules/inferencer/`, `.js` + `.ts` + `types/inferencer/types.d.ts`)
+
+1. New exported helper **`coerceElementValue(element, propName?)`** that reads the inferred
+   value property and coerces it, mirroring `be-value-added`'s `parseVal` rules:
+   - `<time>` (`dateTime`) → `Date` (or `undefined` when empty)
+   - `<input type=number|range>` (`valueAsNumber`) → `number` (`undefined` when `NaN`)
+   - `<input type=checkbox|radio>` (`checked`) → `boolean`
+   - schema.org `itemtype` hints honored: `Number` / `Integer` / `Float` / `Boolean` / `Date` / `DateTime`
+   - `textContent` returned verbatim
+   - otherwise `JSON.parse` when possible, else the raw string — so
+     `<data value="12345">` → `12345`, `<data value="true">` → `true`,
+     `<data value="EUR">` → `"EUR"`
+2. `get value()` now: `deref` the element → pick prop name (`#propName` if a real string,
+   else `inferValueProperty(el)`) → `return coerceElementValue(el, propName)`. Falls back to
+   the cached `#value` only when the element has been GC'd.
+3. Setter unchanged (you said fine-tuning comes later). `.d.ts` also gained the
+   already-shipped-but-undeclared `valueProperty` / `getPropagator` / `defaultRemoteBindingPropName`.
+
+Verified the coercion table with a quick Node trace (data/output/time/itemtype/input-number all pass).
+
+### Caveats / follow-ups
+
+- **This edit lives in `node_modules/inferencer/` and will be lost on reinstall** — it needs to be
+  upstreamed to the `inferencer` repo (and the `types` submodule) to stick.
+- `<link href="https://schema.org/True|False">` handling from `be-value-added` is *not* reproduced —
+  `inferValueProperty` doesn't even map `<link>`/`<meta>` yet (returns `textContent`). Separate task
+  if you want full parity.
+- Secondary goal you mentioned: `be-intl.js`'s local `readValue()` now duplicates
+  `coerceElementValue`. Once the inferencer change is upstreamed, `be-intl` can drop `readValue()` and
+  use `(await infer(el)).value` directly. Left as-is for now.
+
+  ## Bruce's Response II
+
+  It's better.  But in Chrome, at least JSON.parse('12345') = 12345.  The number, not the string.  
+
+  But now when I do 
+
+```JS
+$0.enh.inferencer.value
+```
+
+I get the string `12345` on the first data element.
+
+## Claude's Response III
+
+My edited getter does return the **number** `12345` for `<data value="12345">` — verified two ways:
+
+```
+$ node -e "import('./node_modules/inferencer/inferencer.js').then(async m=>{
+    const el={localName:'data',value:'12345',getAttribute:()=>null};
+    console.log(typeof new m.Infer(el,{config:{}}).value)  // -> number
+  })"
+```
+
+`coerceElementValue(dataEl,'value')` → no switch case → not null → string → no `itemtype` →
+not `textContent` → not `''` → `JSON.parse('12345')` → `12345`. There is no path that returns
+the raw string here.
+
+So if the browser hands you `"12345"`, it isn't running this file. **There are 5 copies of
+`inferencer.js` on disk right now** (your local `assign-gingerly` vendors its own as a submodule):
+
+| path | who imports it (in the browser) | edited? |
+|---|---|---|
+| `node_modules/inferencer/inferencer.js` | bare `inferencer/...` → **`be-intl.js`'s `infer()`** (import map) | ✅ yes |
+| `assign-gingerly/inferencer/inferencer.js` | `./inferencer/...` from your local `assign-gingerly` (`beVigilant.js`, `inferredAssignments.js`) | ❌ no — and it's a *different, newer* version (`#queryScoped`, changed `['|']` sig) whose `get value()` is still `return this.#value` |
+| `node_modules/assign-gingerly/inferencer/…` | — (import map shadows it) | ❌ |
+| `node_modules/mount-observer/node_modules/assign-gingerly/inferencer/…` | — | ❌ |
+| `node_modules/roundabout-lib/node_modules/assign-gingerly/inferencer/…` | — | ❌ |
+
+`enh.inferencer` is stored per-`enhKey` with last-writer-wins, and both the standalone package
+and the vendored copy register an item with `enhKey: 'inferencer'`. Whichever `Infer` spawned
+last for that element is what `$0.enh.inferencer` points at.
+
+**To get a deterministic result while debugging, collapse them to one copy** — point the import
+map's `inferencer/` at whichever tree you're actually editing, e.g.
+
+```json
+"inferencer/": "/assign-gingerly/inferencer/",
+```
+
+and apply the same `coerceElementValue` change there (that copy is newer, so it's probably the
+one you want to be working in anyway). Then hard-reload (DevTools → Network → "Disable cache").
+
+Quick confirmation of which copy is live:
+
+```JS
+$0.enh.inferencer.constructor.toString().includes('coerceElementValue')  // true = edited copy
+```
+
+If you'd rather I just port the fix into `assign-gingerly/inferencer/inferencer.js` (the vendored
+submodule) as well, say the word and I'll mirror it there.
+
+### Update
+
+Per your instruction, the same change is now in **`assign-gingerly/inferencer/inferencer.ts`
+only** (`get value()` + new `coerceElementValue`); the generated `inferencer.js` there was
+reverted for you to rebuild. `tsc --noEmit` passes clean for that submodule. Added `CLAUDE.md`
+at the repo root recording the "edit `.ts` only under `assign-gingerly/`" rule.
+
+`node_modules/inferencer/` (`.js` + `.ts`) keeps its edit — it has no build step and is what
+`be-intl.js` loads today; the passing unit test depends on it.
+
+## Bruce's Response III
+
+I meant to add the instructions to Claude.md of the assign-gingerly folder, not be-intl.
+
+I might have been mistaken.  Maybe I just did $0.value by mistake.  Anyway, they are all working now, thanks.
+
+The only other gap that I see compared to the old be-value-added is this:
+
+When I inspect the time element and set:
+
+```JavaScript
+$0.enh.inferencer.value = new Date()
+```
+
+It sets $0.value to Tue Sep 01 2026 23:08:06 GMT-0400 (Eastern Daylight Time)
+
+rather than than to the toISO string:
+
+2011-11-18T14:54:39.929Z
+
+## Claude's Response IV
+
+Fixed. The `value` **setter** now runs the assigned value through a new
+`serializeForProperty(propName, nv)` before writing it to the DOM property:
+
+- `Date` → `nv.toISOString()` — so `$0.enh.inferencer.value = new Date()` writes
+  `"2026-09-01T…Z"` to `<time>.dateTime` (and it round-trips: the getter reads it back as a `Date`)
+- plain objects / arrays → `JSON.stringify(nv)`
+- `checked` / `valueAsNumber` / `valueAsDate` → passed through untouched (the DOM types those)
+- the setter also now honors an explicit `#propName` (same guard the getter uses)
+
+Applied to:
+- **`assign-gingerly/inferencer/inferencer.ts`** — `.ts` only, per the rule. Your build watcher
+  regenerated `inferencer.js` + `types/` from it (verified in sync + working). `tsc --noEmit` clean.
+- **`node_modules/inferencer/`** (`.js` + `.ts`) — no build step there; edited both.
+
+`CLAUDE.md` moved: removed from the `be-intl` root, added **`assign-gingerly/CLAUDE.md`**
+("edit `.ts` only; `.js`/`.d.ts` are build output").
+
+## Bruce's Response IV
+
+It's working great.
+
+One possible improvement:
+
+Instead of:
+
+```TS
+    #value: TValue | undefined;
+    
+    get value(): TValue | undefined {
+        const element = this.#weakRef.deref();
+        if (element === undefined) return this.#value;
+        const propName = typeof this.#propName === 'string'
+            ? this.#propName
+            : inferValueProperty(element);
+        return coerceElementValue(element, propName) as TValue | undefined;
+    }
+
+    set value(nv: TValue){
+        this.#value = nv;
+        const {enhancedElement} = this;
+        const propName = typeof this.#propName === 'string'
+            ? this.#propName
+            : inferValueProperty(enhancedElement);
+        (enhancedElement as any)[propName] = serializeForProperty(propName, nv);
+    }
+```
+
+we did:
+
+```TS
+    #value: TValue | undefined;
+    
+    get value(): TValue | undefined {
+        if(this.#value !== undefined) return this.#value;
+        const element = this.#weakRef.deref();
+        if (element === undefined) return this.#value;
+        const propName = typeof this.#propName === 'string'
+            ? this.#propName
+            : inferValueProperty(element);
+        this.#value =  coerceElementValue(element, propName) as TValue | undefined;
+        return this.#value;
+    }
+
+    set value(nv: TValue){
+        this.#value = nv;
+        const {enhancedElement} = this;
+        const propName = typeof this.#propName === 'string'
+            ? this.#propName
+            : inferValueProperty(enhancedElement);
+        (enhancedElement as any)[propName] = serializeForProperty(propName, nv);
+    }
+```
+
+???
+
+Wouldn't that a little faster?  
+
+Also, with this logic in place, is there any redundant logic in be-intl.js that can be removed, in favor of using inferencer?
+
+## Claude's Response V
+
+### On memoizing the getter — I'd recommend against it
+
+The speedup is real but negligible: the hot path of `coerceElementValue` is one property read
+(`element.value`), two `typeof` checks, and `JSON.parse` on a short string — nanoseconds, and
+the getter isn't called in a loop.
+
+The cost is a **correctness regression**. The reason the getter was changed to read the DOM was
+to make `value` *live*. With `if (this.#value !== undefined) return this.#value;`:
+
+- Once anything reads `value`, the result is frozen. A later change to `<data value>` /
+  `<time datetime>` (via `InferencedPropagator`, user input on an `<input>`, or other script)
+  is invisible to `inference.value` forever. `be-value-added` re-derived on every read precisely
+  to avoid this.
+- After the **setter** runs, `#value` holds the caller's pre-`serializeForProperty` JS value, so
+  the getter starts returning that instead of what's actually in the DOM — a divergence source if
+  the DOM property normalizes the value (it does for `<input type=date>`, `<a href>`, …).
+- The one case where repeated reads could actually benefit — an empty element where
+  `coerceElementValue` returns `undefined` — is never cached (`undefined` fails the guard), so it
+  re-derives every time anyway.
+
+If a specific call site is hot, cache **there** with explicit invalidation (e.g. clear on the
+propagator event), rather than making the shared getter lossy. Happy to add an opt-in
+`{ cache: true }` if you have a read-heavy scenario in mind.
+
+### Redundant logic in `be-intl.js` that can now go
+
+Yes — `readValue()` is a near-duplicate of `coerceElementValue`. Proposed cleanup:
+
+| now | after |
+|---|---|
+| `readValue(el)` helper (13 lines) | **deleted** |
+| `hydrate`: wires propagator, `return {locale}` | also seed value: `return { locale, value: inference.value }` |
+| propagator cb: `self.value = readValue(enhancedElement)` | `self.value = inference.value` |
+| `onFormattingChange`: `const value = readValue(enhancedElement); return { intl*Format, value, resolved }` | drop the read: `return { intl*Format, resolved: true }` — `value` is already seeded by `hydrate` and kept fresh by the propagator |
+
+`inference.value` returns a `Date` for `<time>` and a `number` for `<data>`/`<output>`, which is
+exactly what `formatDate` / `formatNumber` expect, so the behavior is unchanged. Net: `be-intl.js`
+loses ~15 lines and the element-type branching lives only in `inferencer`.
+
+Caveat: this assumes the `types` submodule's `Infer` gains `value` as a live getter (it's already
+declared) — fine for runtime today, and `@ts-check` is already satisfied via the `infer()` helper
+returning `any`.
+
+Want me to apply that cleanup? It touches the unit-tested `be-intl.js`, so I left it staged as a
+proposal.
+
+## Bruce's Response V
+
+Good point about live changes getting lost and correctness regression.  Bad idea on my part.
+
+Yes, please apply the cleanup.
+
+## Claude's Response VI
+
+Applied. `be-intl.js`: 168 → 148 lines.
+
+- `readValue()` helper **deleted**.
+- `hydrate` now `return {locale, value: inference.value}` and the propagator callback does
+  `self.value = inference.value`.
+- `onFormattingChange` no longer reads the value — just builds `intl*Format` and returns
+  `{intl*Format, resolved: true}`; `value` is seeded by `hydrate` and kept current by the
+  propagator.
+- `infer()` JSDoc updated (the "types lag" note was stale — the submodule `Infer` decl now has
+  `value` / `getPropagator` / `valueProperty`).
+
+`@ts-check` clean apart from the known pre-existing `TS2681` on the `@this` constructor tag.
+Reactive cascade is unchanged: `initialized` → `hydrate` → `{locale, value}` → `onFormattingChange`
+→ `{intl*Format}` → `formatNumber` / `formatDate`. Not re-run through Playwright yet (per your
+"no unit testing" note still standing — say when).

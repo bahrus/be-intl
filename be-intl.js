@@ -50,7 +50,7 @@ class BeIntl {
     }
 
     /**
-     * Wire up live-update observation and resolve the locale.
+     * Wire up live-update observation, resolve the locale, and seed the value.
      * @param {AP} self
      * @returns {Promise<PAP>}
      */
@@ -66,7 +66,7 @@ class BeIntl {
         const inference = await infer(enhancedElement);
         const propagator = await inference.getPropagator();
         propagator.addEventListener(valueProp, () => {
-            self.value = readValue(enhancedElement);
+            self.value = inference.value;
         });
 
         // Opt-in: track lang changes.
@@ -80,11 +80,12 @@ class BeIntl {
         const locale = self.locale
             || (enhancedElement instanceof HTMLElement ? enhancedElement.lang : '')
             || defaultLocale;
-        return {locale};
+        return {locale, value: inference.value};
     }
 
     /**
-     * (Re)build the Intl formatter and seed the current value.
+     * (Re)build the Intl formatter. `value` is seeded by `hydrate` and kept
+     * fresh by the propagator, so it isn't read here.
      * @param {AP} self
      * @returns {PAP}
      */
@@ -96,17 +97,14 @@ class BeIntl {
             const val = /** @type {Record<string, any>} */ (self)[key];
             if(val !== undefined && format[key] === undefined) format[key] = val;
         }
-        const value = readValue(enhancedElement);
         if(enhancedElement.localName === 'time'){
             return {
                 intlDateFormat: new Intl.DateTimeFormat(locale, /** @type {Intl.DateTimeFormatOptions} */ (format)),
-                value,
                 resolved: true,
             };
         }
         return {
             intlNumberFormat: new Intl.NumberFormat(locale, /** @type {Intl.NumberFormatOptions} */ (format)),
-            value,
             resolved: true,
         };
     }
@@ -134,27 +132,10 @@ class BeIntl {
 }
 
 /**
- * Pull a formattable value off the enhanced element.
- * `<time>` yields a Date parsed from its datetime; everything else yields a
- * number (when the raw value is numeric) or the raw string.
- * @param {Element} el
- * @returns {number | Date | string | undefined}
- */
-function readValue(el){
-    if(el.localName === 'time'){
-        const raw = /** @type {HTMLTimeElement} */ (el).dateTime || el.getAttribute('datetime') || '';
-        return raw ? new Date(raw) : undefined;
-    }
-    const raw = /** @type {any} */ (el).value;
-    if(raw === undefined || raw === null || raw === '') return undefined;
-    const n = Number(raw);
-    return Number.isNaN(n) ? raw : n;
-}
-
-/**
  * Resolve the `inferencer` enhancement instance for an element. Typed loosely
- * because the `types` submodule's `Infer` declaration currently lags the
- * published `inferencer` package (no `getPropagator` / `valueProperty` yet).
+ * (`Promise<any>`) so the class doesn't couple to the `Infer` shape; `.value`
+ * is a live, type-coerced read (`Date` for `<time>`, `number` for `<data>`),
+ * `getPropagator()` emits on value-property changes.
  * @param {Element & ElementEnhancementGateway} from
  * @returns {Promise<any>}
  */
