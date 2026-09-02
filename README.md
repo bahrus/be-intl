@@ -36,6 +36,30 @@ We can also employ more semantic syntax:
 <data value=123456.789 lang="de-DE" be-intl-style=currency be-intl-currency=EUR></data>
 ```
 
+## Locale resolution
+
+The examples above put `lang` right on the formatted element, but that isn't required.
+`be-intl` uses the element's **effective language**, resolved the same way the browser's
+`:lang()` selector works:
+
+1. the nearest ancestor with a `lang` (or `xml:lang`) attribute — crossing shadow-root
+   boundaries via the host element;
+2. otherwise `<html lang>`;
+3. otherwise the browser's own `navigator.language`.
+
+So in practice you set `lang` once, high up:
+
+```html
+<html lang="de-DE">
+  ...
+  <data value=123456.789 be-intl-style=currency be-intl-currency=EUR></data>
+  <!-- emits 123.456,79 € -->
+```
+
+Changing the formatted element's **own** `lang` after it has been enhanced re-formats it only
+if you opt in with `be-intl-observe-lang` (`🌐-observe-lang`); changes to an ancestor's `lang`
+after enhancement are not tracked.
+
 ## Alternative names
 
 The semantic example above involves a lot of keyboard tapping of the letters "be-intl".  To avoid blisters on your itty bitty fingers, we provide an alternative base attribute you can use:

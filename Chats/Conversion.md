@@ -54,7 +54,7 @@ Instead the class:
 ### Reactive wiring (`emc.mjs` `customData.actions`)
 
 - `initialized` flag pattern (from three-peat) is used: `init` sets `self.initialized = true` right after `await roundabout(...)`, and `hydrate` gates on `ifAllOf: ['enhancedElement','initialized'] / ifKeyIn: ['initialized']` so it runs exactly once, after every attribute has been read.
-- `hydrate` resolves the locale (explicit `locale` → element `lang` → runtime default) and returns `{locale}`.
+- `hydrate` resolves the locale (explicit `locale` → `inference.lang` (effective language: nearest `lang`/`xml:lang` ancestor across shadow hosts → `<html lang>` → `navigator.language`) → runtime default) and returns `{locale, value}`.
 - `{locale}` triggers `onFormattingChange` → builds `intlNumberFormat` **or** `intlDateFormat` (branch on `localName === 'time'`, same as legacy) and seeds `value`.
 - `value` changes drive `formatNumber` / `formatDate`, which write `textContent`.
 
@@ -66,7 +66,7 @@ Instead the class:
 4. **`beVigilant` / attribute-mutation observation of the *source* value** — replaced by `inferencer`'s `getPropagator()`. For `<data>` that wires a `MutationObserver` on the `value` attribute (good). For `<time>` `InferencedPropagator` falls back to **setter interception** on `dateTime` — a change to the `datetime` *attribute* from outside won't be picked up (legacy `BeValueAdded` would have, with `beVigilant`). Low risk for typical usage; noted.
 5. **`observeAttr` → `observeLang`** — legacy `be-intl.ts` had an `observeAttr` prop gating a `lang` `MutationObserver`; the be-enhanced-era root version dropped it. I re-added the capability as an opt-in boolean attribute `be-intl-observe-lang` (`observeLang` prop). Default off, matching the shipped behavior.
 6. **Default locale baked at build vs. runtime** — legacy `emc.js` computed `new Intl.NumberFormat().resolvedOptions().locale` in the browser. Keeping that: it's computed in `be-intl.js` at module load (browser), NOT in `emc.mjs` (which would freeze the build machine's locale into the JSON). So `emc.mjs` has no locale default and the class owns the fallback.
-7. **`_lang` / `osotas`** — legacy used an `osota` to map the global `lang` attribute → `locale`. I did **not** map `lang` through `withAttrs`, because a non-underscore `lang` entry would also add `[lang]` to the generated `matching` selector (every element with a `lang` attribute would match `be-intl`). The class reads `enhancedElement.lang` directly in `hydrate` instead — same effect, matches `legacy/be-intl.ts`.
+7. **`_lang` / `osotas`** — legacy used an `osota` to map the global `lang` attribute → `locale`. I did **not** map `lang` through `withAttrs`, because a non-underscore `lang` entry would also add `[lang]` to the generated `matching` selector (every element with a `lang` attribute would match `be-intl`). `hydrate` reads the *effective* language via `inference.lang` instead (see Response VIII) — an improvement over legacy, which only read `enhancedElement.lang`.
 8. **Live re-format on `format` / semantic-attr mutation** — `onFormattingChange` effectively runs once (post-`initialized`, via the `locale` hand-off). Runtime mutation of `be-intl='{...}'` or a `be-intl-*` attribute after mount will not currently rebuild the formatter. Legacy's `ifKeyIn: ['format','currency']` implied it could. Add `format` (and the semantic keys) to a compact / widen `onFormattingChange`'s `ifKeyIn` if this matters.
 
 ### Known type-check noise
@@ -393,3 +393,116 @@ Applied. `be-intl.js`: 168 → 148 lines.
 Reactive cascade is unchanged: `initialized` → `hydrate` → `{locale, value}` → `onFormattingChange`
 → `{intl*Format}` → `formatNumber` / `formatDate`. Not re-run through Playwright yet (per your
 "no unit testing" note still standing — say when).
+
+## Bruce's Response VI
+
+Everything is looking great.  One important point I forgot to ask about.  Are we doing the lang attribute wrong?  We apply the formatting based on the lang attribute if the attribute is present on the element itself, but what ever the attribute is applied at a higher, containing element, even outside the shadow DOM.  How is that suppose to apply?  Is there a universal way of reading what the language default should be on an element, including inheritance rules?
+
+## Claude's Response VII
+
+You're right — reading only `enhancedElement.lang` is incomplete. `lang` is an **inherited**
+attribute: the effective language of an element is the value of the *nearest ancestor* that
+carries `lang` (or `xml:lang`), and in practice that's usually `<html lang>` or a section
+wrapper, not the formatted element itself. Legacy `be-intl` had the same limitation (it also
+only read `enhancedElement.lang`), so this is an improvement opportunity, not a regression from
+the conversion.
+
+### Is there a universal accessor? No.
+
+There is **no DOM property** that gives you "the computed language of this element". The options:
+
+| approach | covers | misses |
+|---|---|---|
+| `el.lang` | attribute on `el` itself | all inheritance |
+| `el.closest('[lang]')?.getAttribute('lang')` | ancestors in the **same** tree | shadow-root boundaries |
+| walk `parentNode`, hop `getRootNode().host` at each shadow boundary | ancestors **and** shadow hosts | slot reprojection edge cases |
+| `getComputedStyle(el)` | — | lang isn't a CSS property, not exposed |
+| `el.matches(':lang(xx)')` | tests one known tag; `:lang()` *does* pierce shadow DOM in modern browsers | you have to already know `xx`, so it's a check not a read |
+
+The `:lang()` pseudo-class is the spec's "source of truth" for matching, and recent HTML/CSS
+makes it cross shadow boundaries and consider the host — but it only answers yes/no for a given
+tag, so you can't use it to *read* the value.
+
+So the practical universal read is the **walk**, with a sensible fallback chain:
+
+```js
+function resolveLang(el) {
+    let node = el;
+    while (node) {
+        if (node instanceof Element) {
+            const lang = node.lang || node.getAttribute('xml:lang');
+            if (lang) return lang;
+        }
+        const root = node.getRootNode?.();
+        node = node.parentNode ?? (root && root !== node && 'host' in root ? root.host : null);
+    }
+    return document.documentElement.lang
+        || navigator.language          // browser UI preference
+        || undefined;                  // -> caller falls back to Intl default
+}
+```
+
+`navigator.language` (last resort) is essentially what our current `defaultLocale`
+(`new Intl.NumberFormat().resolvedOptions().locale`) already resolves to, so the fallback stays
+consistent.
+
+### Where it belongs
+
+This is element-convention logic, same category as `.value` / `.eventType` / `.propName` — it
+should live in **`inferencer`**, not be reimplemented per enhancement. Proposed:
+
+- add `resolveLang(element)` (above) as an export in `inferencer`, and a `get lang()` on `Infer`;
+- `be-intl.js` `hydrate` becomes:
+  ```js
+  const locale = self.locale || inference.lang || defaultLocale;
+  ```
+  (drops the `enhancedElement instanceof HTMLElement ? enhancedElement.lang : ''` line);
+- `observeLang` then needs to watch `lang` on the resolved ancestor, not just `enhancedElement`
+  — or, simpler, a `MutationObserver` on `document` subtree filtered to `lang` is overkill;
+  keep `observeLang` watching `enhancedElement` only and document that container-`lang` changes
+  after mount aren't tracked (rare).
+
+Per the `assign-gingerly`/`CLAUDE.md` rule I'd put the real change in
+`assign-gingerly/inferencer/inferencer.ts` (+ mirror to `node_modules/inferencer/` for runtime).
+
+Want me to implement `resolveLang` + `Infer.lang` and wire `be-intl` to it?
+
+## Bruce's Response VII
+
+I brought back the assign-gingerly package / source into this project temporarily, and ts compiling is to js.
+
+Please make the change.
+## Claude's Response VIII
+
+Implemented `resolveLang` + `Infer.lang` and wired `be-intl` to it.
+
+**`inferencer`** (`assign-gingerly/inferencer/inferencer.ts` — `.ts` only, watcher built `.js`; mirrored to `node_modules/inferencer/` `.js`+`.ts` for runtime; both `types.d.ts` updated):
+- `export function resolveLang(element)` — walks `parentNode`, hops `ShadowRoot` -> `.host`, returns the first `lang`/`xml:lang` it finds; then `<html lang>`, then `navigator.language`, else `undefined`. Slot reprojection deliberately not followed (HTML lang inheritance is over the real node tree).
+- `get lang()` on `Infer` — `resolveLang(enhancedElement)`.
+- Also declared the previously-undeclared `serializeForProperty` in the `.d.ts` files.
+
+**`be-intl.js`**:
+- `hydrate`: `const locale = self.locale || inference.lang || defaultLocale;` (dropped the `enhancedElement.lang` line).
+- `observeLang` callback now recomputes via `inference.lang` (so setting `lang` on the element re-walks). Container-`lang` mutations after mount still arent observed — documented in the type + a code comment; rare enough to leave.
+
+Verified with a Node trace: inherits from a container `<div lang>`, falls through to `<html lang>`, crosses a shadow host, orphan -> `navigator.language`. `tsc` clean (vendored submodule exit 0; `be-intl.js` only the known `TS2681`).
+
+
+## Bruce's Response VIII
+
+Can you check if anything in README.md needs to be updated to accurately reflect how we are handling the lang attribute now?
+
+## Claude's Response IX
+
+Nothing in the README was *inaccurate* — every example sets `lang` directly on the element, and
+that still works (it's the first thing `resolveLang` finds). But it was *incomplete*: the
+inheritance behavior wasn't documented anywhere.
+
+Added a **"## Locale resolution"** section (after the semantic-syntax example) covering:
+- effective-language resolution order: nearest `lang`/`xml:lang` ancestor (across shadow hosts)
+  -> `<html lang>` -> `navigator.language`;
+- the common pattern of setting `lang` once on `<html>`;
+- the `be-intl-observe-lang` / `🌐-observe-lang` opt-in for re-formatting on the element's own
+  `lang` change, and the note that ancestor-`lang` changes after enhancement are not tracked.
+
+Existing examples left as-is.
