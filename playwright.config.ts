@@ -9,6 +9,8 @@ const config: PlaywrightTestConfig = {
   },
   use: {
     baseURL: 'http://localhost:8000/',
+    locale: 'en-US',
+    timezoneId: 'UTC',
   },
   projects: [
     {
