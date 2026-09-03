@@ -64,32 +64,23 @@ class BeIntl {
         // <data>/<output> reflect through `value`, <time> through `dateTime`.
         const valueProp = enhancedElement.localName === 'time' ? 'dateTime' : 'value';
         const inference = await infer(enhancedElement);
-
-        // Read straight off `enhancedElement` (strongly held here) via inferencer's
-        // pure helpers rather than `inference.value` / `inference.lang`: those go
-        // through an internal WeakRef that can be cleared under GC before we read,
-        // yielding `undefined` (only reproduces on slow/cold CI runners).
-        const {coerceElementValue, resolveLang} =
-            await import('inferencer/inferencer.js');
-        const readValue = () => coerceElementValue(enhancedElement);
-        const readLang = () => resolveLang(enhancedElement);
-
         const propagator = await inference.getPropagator();
         propagator.addEventListener(valueProp, () => {
-            self.value = readValue();
+            self.value = inference.value;
         });
 
         // Opt-in: track lang changes on the element itself. Container-`lang`
-        // changes after mount aren't observed (rare).
+        // changes after mount aren't observed (rare); `inference.lang` still
+        // walks ancestors + shadow hosts on each read.
         if(self.observeLang && enhancedElement instanceof HTMLElement){
             const langObserver = new MutationObserver(() => {
-                self.locale = readLang() || defaultLocale;
+                self.locale = inference.lang || defaultLocale;
             });
             langObserver.observe(enhancedElement, {attributes: true, attributeFilter: ['lang']});
         }
 
-        const locale = self.locale || readLang() || defaultLocale;
-        return {locale, value: readValue()};
+        const locale = self.locale || inference.lang || defaultLocale;
+        return {locale, value: inference.value};
     }
 
     /**
