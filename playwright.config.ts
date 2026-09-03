@@ -13,6 +13,9 @@ const config: PlaywrightTestConfig = {
   },
   // 'list' (not the terse CI default 'dot') so failures print in full in the CI log.
   reporter: 'list',
+  // Well above the 30s assertion timeout in test1 so the on-failure diagnostics
+  // (page.evaluate probes) get to run before the test is torn down.
+  timeout: 90_000,
   use: {
     baseURL: 'http://localhost:8000/',
     locale: 'en-US',

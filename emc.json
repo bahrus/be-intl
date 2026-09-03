@@ -35,7 +35,8 @@
                 ],
                 "ifKeyIn": [
                     "initialized"
-                ]
+                ],
+                "debug": true
             },
             "onFormattingChange": {
                 "ifAllOf": [
@@ -46,7 +47,8 @@
                     "locale",
                     "format",
                     "initialized"
-                ]
+                ],
+                "debug": true
             },
             "formatNumber": {
                 "ifAllOf": [
@@ -55,7 +57,8 @@
                 "ifKeyIn": [
                     "value",
                     "intlNumberFormat"
-                ]
+                ],
+                "debug": true
             },
             "formatDate": {
                 "ifAllOf": [
@@ -64,7 +67,8 @@
                 "ifKeyIn": [
                     "value",
                     "intlDateFormat"
-                ]
+                ],
+                "debug": true
             }
         }
     }
