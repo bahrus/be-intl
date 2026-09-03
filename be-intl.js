@@ -56,9 +56,6 @@ class BeIntl {
      */
     async hydrate(self){
         const {enhancedElement} = self;
-        if(enhancedElement instanceof HTMLElement){
-            enhancedElement.ariaLive = 'polite';
-        }
 
         // Re-format whenever the element's underlying value property changes.
         // <data>/<output> reflect through `value`, <time> through `dateTime`.
@@ -111,6 +108,7 @@ class BeIntl {
 
     /**
      * @param {AP} self
+     * @returns {PAP | void}
      */
     formatNumber(self){
         const {enhancedElement, value, intlNumberFormat} = self;
@@ -119,15 +117,37 @@ class BeIntl {
             return;
         }
         enhancedElement.textContent = intlNumberFormat.format(/** @type {number} */ (value));
+        if(!self.rendered) return {rendered: true};
     }
 
     /**
      * @param {AP} self
+     * @returns {PAP | void}
      */
     formatDate(self){
         const {enhancedElement, value, intlDateFormat} = self;
         if(intlDateFormat === undefined || value === undefined || value === null) return;
         enhancedElement.textContent = intlDateFormat.format(/** @type {Date} */ (value));
+        if(!self.rendered) return {rendered: true};
+    }
+
+    /**
+     * Opt-in via `be-intl-announce`. Once the value has rendered at least once,
+     * mark the element as a polite ARIA live region so subsequent re-formats
+     * (value or locale changes) are announced by assistive tech. Deliberately
+     * deferred past the first render so the initial value isn't spoken on load,
+     * and `aria-live` is skipped for `<output>` (already an implicit polite live
+     * region). `aria-atomic` keeps multi-token output (e.g. a formatted date)
+     * announcing as one unit.
+     * @param {AP} self
+     */
+    armLiveRegion(self){
+        const {enhancedElement} = self;
+        if(!(enhancedElement instanceof HTMLElement)) return;
+        enhancedElement.setAttribute('aria-atomic', 'true');
+        if(enhancedElement.localName !== 'output'){
+            enhancedElement.setAttribute('aria-live', 'polite');
+        }
     }
 }
 

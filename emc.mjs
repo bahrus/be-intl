@@ -31,6 +31,9 @@ export const emc = {
             // Opt-in: re-derive locale when the element's lang attribute changes.
             observeLang: '${base}-observe-lang',
             _observeLang: { instanceOf: 'Boolean' },
+            // Opt-in: announce re-formats to assistive tech (polite live region).
+            announce: '${base}-announce',
+            _announce: { instanceOf: 'Boolean' },
         }
     },
     customData: {
@@ -56,6 +59,12 @@ export const emc = {
             formatDate: {
                 ifAllOf: ['intlDateFormat'],
                 ifKeyIn: ['value', 'intlDateFormat'],
+            },
+            // `be-intl-announce` only: arm the live region once, after the first
+            // render (`rendered` is set by formatNumber/formatDate on first write).
+            armLiveRegion: {
+                ifAllOf: ['announce', 'rendered'],
+                ifKeyIn: ['rendered'],
             },
         },
     }

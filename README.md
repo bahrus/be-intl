@@ -60,6 +60,34 @@ Changing the formatted element's **own** `lang` after it has been enhanced re-fo
 if you opt in with `be-intl-observe-lang` (`🌐-observe-lang`); changes to an ancestor's `lang`
 after enhancement are not tracked.
 
+## Announcing updates to assistive technology
+
+`be-intl` writes the formatted string into `textContent` on first render and again whenever the
+bound value or the effective locale changes. By default it leaves ARIA untouched — most
+formatted `<data>` / `<time>` elements are static readouts, and turning every one into a live
+region (especially for a locale switch that only changes *presentation*, not the value) is
+usually just screen-reader noise.
+
+When a particular value *is* something the user is watching change, opt that element in with
+`be-intl-announce` (`🌐-announce`):
+
+```html
+<output be-intl be-intl-announce></output>
+<data be-intl be-intl-announce value="0" id="unread"></data>
+```
+
+With the attribute set, `be-intl` — **after** the element's first render, so the initial value
+isn't spoken on load — marks it as a polite live region:
+
+- `aria-live="polite"` (skipped for `<output>`, which is already an implicit polite live
+  region), and
+- `aria-atomic="true"`, so multi-token output such as a formatted date is announced as one
+  phrase rather than word-by-word.
+
+Later re-formats then mutate an already-registered region and are announced. `assertive` is
+intentionally not offered — interrupting the user to read out a reformatted number is almost
+never the right call.
+
 ## Alternative names
 
 The semantic example above involves a lot of keyboard tapping of the letters "be-intl".  To avoid blisters on your itty bitty fingers, we provide an alternative base attribute you can use:

@@ -97,3 +97,72 @@ not set it on `<output>`.
 
 Ok, please make your recommended changes and update README.md to explain this, and add your implementation notes below.
 
+## Implementation notes (Claude)
+
+### Behavior change
+
+Live-region behavior is now **opt-in**. `hydrate()` no longer sets
+`enhancedElement.ariaLive = 'polite'`. Instead:
+
+- New boolean attribute **`be-intl-announce`** (`🌐-announce`), declared in
+  `emc.mjs` alongside `observeLang`:
+  ```js
+  announce: '${base}-announce',
+  _announce: { instanceOf: 'Boolean' },
+  ```
+- New prop **`rendered`**, flipped to `true` by `formatNumber` / `formatDate`
+  the first time they actually write a value:
+  ```js
+  enhancedElement.textContent = intlNumberFormat.format(value);
+  if(!self.rendered) return {rendered: true};
+  ```
+- New action **`armLiveRegion`**, gated so it runs exactly once, after that
+  first render, and only when opted in:
+  ```js
+  armLiveRegion: {
+      ifAllOf: ['announce', 'rendered'],
+      ifKeyIn: ['rendered'],
+  }
+  ```
+  ```js
+  armLiveRegion(self){
+      const {enhancedElement} = self;
+      if(!(enhancedElement instanceof HTMLElement)) return;
+      enhancedElement.setAttribute('aria-atomic', 'true');
+      if(enhancedElement.localName !== 'output'){
+          enhancedElement.setAttribute('aria-live', 'polite');
+      }
+  }
+  ```
+
+### How each point from the review was addressed
+
+| Concern | Resolution |
+| --- | --- |
+| Unconditional | Opt-in via `be-intl-announce`; default touches no ARIA. |
+| Registration-vs-initial-render race | Region is armed by a *separate* action that fires off the `rendered` flag, i.e. strictly after the first `textContent` write — the initial value mutates the DOM before the region exists, so it isn't announced; every later re-format mutates an already-registered region. |
+| `aria-atomic` left at default | `armLiveRegion` sets `aria-atomic="true"`. |
+| `<output>` already a live region | `armLiveRegion` skips `aria-live` for `<output>` (still sets `aria-atomic`). |
+| Presentation-only changes still announced | Not fully solved — `formatNumber`/`formatDate` run for both value and locale changes and the code can't currently tell them apart, so a locale switch on an opted-in element is still announced. Documented as a known limitation; opting in is now a deliberate choice, and a locale toggle is a rarer, user-initiated event. A future refinement could pass the `changedProperty` through and suppress the announce when only `locale` changed. |
+| `assertive` | Deliberately not exposed — `be-intl-announce` is boolean, always polite. |
+
+### Reactive-graph safety
+
+`rendered` is monitored only by `armLiveRegion`; it is **not** in
+`formatNumber` / `formatDate`'s `ifKeyIn`, so setting it does not re-enter the
+format actions (no loop). `formatNumber` returns `{rendered: true}` only while
+`!self.rendered`, so `armLiveRegion` fires once per element.
+
+### Docs / types
+
+- `README.md` — new "Announcing updates to assistive technology" section.
+- `types/be-intl/types.d.ts` (the `bahrus/types` submodule) — added `announce`
+  to `EndUserProps`, `rendered` to `AllProps`, `armLiveRegion` to `Actions`, and
+  widened `formatNumber`/`formatDate` returns to `PAP | void`. **Needs its own
+  commit in the `types` repo.**
+- `tests/test1.html` / `tests/test1.spec.mjs` — added a `<data be-intl
+  be-intl-announce value="500">` case asserting `aria-live="polite"` +
+  `aria-atomic="true"` appear after render, plus a negative assertion that a
+  plain `be-intl` element gets no `aria-live`.
+- `emc.json` / `🌐.json` regenerated via `npm run build`.
+

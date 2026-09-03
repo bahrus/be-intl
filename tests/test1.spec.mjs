@@ -13,4 +13,14 @@ test('test1', async ({ page }) => {
     await expect(page.locator('data').first()).toHaveText('12,345', { timeout: 15_000 });
     await expect(page.locator('data').nth(1)).toContainText('123.456,79');
     await expect(page.locator('time')).toContainText('٢٠١١');
+
+    // `be-intl-announce`: element becomes a polite live region *after* its first
+    // render, so re-formats are announced but the initial value is not.
+    const announced = page.locator('data').nth(2);
+    await expect(announced).toHaveText('500');
+    await expect(announced).toHaveAttribute('aria-live', 'polite');
+    await expect(announced).toHaveAttribute('aria-atomic', 'true');
+
+    // Elements that didn't opt in are left untouched.
+    await expect(page.locator('data').first()).not.toHaveAttribute('aria-live', /.*/);
 });

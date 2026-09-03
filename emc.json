@@ -18,6 +18,10 @@
             "observeLang": "${base}-observe-lang",
             "_observeLang": {
                 "instanceOf": "Boolean"
+            },
+            "announce": "${base}-announce",
+            "_announce": {
+                "instanceOf": "Boolean"
             }
         }
     },
@@ -64,6 +68,15 @@
                 "ifKeyIn": [
                     "value",
                     "intlDateFormat"
+                ]
+            },
+            "armLiveRegion": {
+                "ifAllOf": [
+                    "announce",
+                    "rendered"
+                ],
+                "ifKeyIn": [
+                    "rendered"
                 ]
             }
         }
