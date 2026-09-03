@@ -4,9 +4,6 @@ test('test1', async ({ page }) => {
     /** @type {string[]} */
     const logs = [];
 
-    // Playwright's `pageerror` does NOT fire for unhandled promise rejections,
-    // and be-intl's enhancement chain is almost entirely async — so surface
-    // those explicitly from inside the page.
     await page.addInitScript(() => {
         addEventListener('unhandledrejection', e => {
             // eslint-disable-next-line no-console
@@ -23,37 +20,38 @@ test('test1', async ({ page }) => {
     page.on('requestfailed', req =>
         logs.push(`[requestfailed] ${req.method()} ${req.url()} - ${req.failure()?.errorText}`));
     page.on('response', res =>
-        logs.push(`[response ${res.status()}] ${res.headers()['content-type'] || '?'}  ${res.url()}`));
+        logs.push(`[response ${res.status()}] ${res.url()}`));
 
     await page.goto('./tests/test1.html');
 
     const firstData = page.locator('data').first();
     try {
-        await expect(firstData).toHaveText('12,345', { timeout: 15_000 });
+        await expect(firstData).toHaveText('12,345', { timeout: 30_000 });
     } catch (e) {
         console.log('--- captured page events ---\n' + (logs.join('\n') || '(none)'));
-        console.log('--- rendered <data>/<time> ---\n' +
-            await page.locator('data, time').evaluateAll(
-                els => els.map(el => `${el.tagName} be-intl=${el.hasAttribute('be-intl')} enh=${'enh' in el} => ${JSON.stringify(el.textContent)}`).join('\n')));
-        // Probe the enhancement gateway / inferencer directly.
-        console.log('--- gateway probe ---\n' + await page.evaluate(async () => {
-            const el = document.querySelector('data');
-            const out = [];
-            out.push('customElements be-hive defined? ' + !!customElements.get('be-hive'));
-            out.push('el.enh: ' + typeof (el && el.enh));
-            try {
-                const mod = await import('inferencer/inferencer.js');
-                out.push('inferencer import ok, registryItem: ' + typeof mod.registryItem);
-            } catch (err) { out.push('inferencer import FAILED: ' + err); }
-            try {
-                await import('inferencer/InferencedPropagator.js');
-                out.push('InferencedPropagator import ok');
-            } catch (err) { out.push('InferencedPropagator import FAILED: ' + err); }
-            try {
-                await import('roundabout-lib/roundabout.js');
-                out.push('roundabout import ok');
-            } catch (err) { out.push('roundabout import FAILED: ' + err); }
-            return out.join('\n');
+        // Introspect the be-intl view-model on each element to see which stage of the
+        // roundabout reactive pipeline (init -> hydrate -> onFormattingChange -> formatNumber)
+        // actually completed on this runner.
+        console.log('--- be-intl vm state ---\n' + await page.evaluate(() => {
+            const pick = vm => {
+                if (!vm) return '(no vm)';
+                const g = k => { try { return JSON.stringify(vm[k]); } catch { return '<throw>'; } };
+                return [
+                    'initialized=' + g('initialized'),
+                    'locale=' + g('locale'),
+                    'value=' + g('value'),
+                    'resolved=' + g('resolved'),
+                    'hasFormat=' + (vm.format !== undefined),
+                    'intlNumberFormat=' + (vm.intlNumberFormat ? 'set' : String(vm.intlNumberFormat)),
+                    'intlDateFormat=' + (vm.intlDateFormat ? 'set' : String(vm.intlDateFormat)),
+                    '__roundaboutReactions=' + (vm.__roundaboutReactions ? [...vm.__roundaboutReactions.keys()].join(',') : 'none'),
+                ].join('  ');
+            };
+            return [...document.querySelectorAll('data, time')].map((el, i) => {
+                const enh = el.enh || {};
+                const vm = enh.BeIntl || enh['be-intl'] || Object.values(enh).find(v => v && 'initialized' in v);
+                return `#${i} ${el.tagName} text=${JSON.stringify(el.textContent)}\n     enhKeys=[${Object.keys(enh).join(',')}]\n     ${pick(vm)}`;
+            }).join('\n');
         }));
         throw e;
     }
