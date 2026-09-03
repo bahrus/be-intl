@@ -33,7 +33,6 @@
   "dependencies": {
     "assign-gingerly": "0.0.93",
     "be-hive": "0.1.18",
-    "inferencer": "0.0.13",
     "mount-observer": "0.1.53",
     "roundabout-lib": "0.0.36"
   },

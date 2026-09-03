@@ -141,7 +141,7 @@ class BeIntl {
  */
 async function infer(from){
     return /** @type {any} */ (
-        from.enh.get((await import('inferencer/inferencer.js')).registryItem)
+        from.enh.get((await import('assign-gingerly/inferencer/inferencer.js')).registryItem)
     );
 }
 
