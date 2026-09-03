@@ -64,6 +64,14 @@ class BeIntl {
         // <data>/<output> reflect through `value`, <time> through `dateTime`.
         const valueProp = enhancedElement.localName === 'time' ? 'dateTime' : 'value';
         const inference = await infer(enhancedElement);
+
+        // Snapshot the initial reads now, before the next `await`. `inference.value`
+        // and `inference.lang` resolve their element through an internal WeakRef; on
+        // a slow first load a GC during the dynamic import inside `getPropagator()`
+        // can clear it, so a later read yields `undefined` (seen only on cold CI).
+        const initialValue = inference.value;
+        const initialLang = inference.lang;
+
         const propagator = await inference.getPropagator();
         propagator.addEventListener(valueProp, () => {
             self.value = inference.value;
@@ -79,8 +87,8 @@ class BeIntl {
             langObserver.observe(enhancedElement, {attributes: true, attributeFilter: ['lang']});
         }
 
-        const locale = self.locale || inference.lang || defaultLocale;
-        return {locale, value: inference.value};
+        const locale = self.locale || initialLang || defaultLocale;
+        return {locale, value: initialValue};
     }
 
     /**
