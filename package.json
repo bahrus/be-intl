@@ -14,6 +14,7 @@
     ".": "./be-intl.js",
     "./be-intl.js": "./be-intl.js",
     "./🌐.js": "./🌐.js",
+    "./def.js": "./def.js",
     "./emc.json": "./emc.json",
     "./🌐.json": "./🌐.json"
   },
@@ -31,14 +32,14 @@
     "update": "ncu -u && npm install"
   },
   "dependencies": {
-    "assign-gingerly": "0.0.93",
+    "assign-gingerly": "0.0.97",
     "be-hive": "0.1.18",
     "mount-observer": "0.1.53",
-    "roundabout-lib": "0.0.36"
+    "roundabout-lib": "0.0.38"
   },
   "devDependencies": {
     "spa-ssi": "0.0.28",
-    "@playwright/test": "1.62.1"
+    "@playwright/test": "1.63.0"
   },
   "author": "anderson.bruce.b@gmail.com",
   "license": "MIT"

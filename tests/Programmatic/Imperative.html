@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programmatic imperative</title>
+    <!-- #include virtual="/imports.html" -->
+</head>
+<body>
+    <data id=price value=1234.5></data>
+    <data id=total value=42></data>
+    <button id=toEuros>Switch to euros</button>
+    <script type=module>
+        import {defBeIntl} from 'be-intl/def.js';
+        const emc = await defBeIntl(document.body);
+        // locale has no attribute equivalent -- otherwise it comes from the nearest lang attribute
+        Object.assign(price.enh.get(emc), {
+            locale: 'de-DE',
+            style: 'currency',
+            currency: 'USD',
+        });
+        // no properties at all -- equivalent to <data be-intl value=42>
+        total.enh.get(emc);
+        toEuros.addEventListener('click', () => {
+            price.enh.beIntl.currency = 'EUR';
+        });
+    </script>
+</body>
+</html>

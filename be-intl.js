@@ -32,7 +32,9 @@ class BeIntl {
      * @param {PAP} initVals
      */
     async init(self, enhancedElement, ctx, initVals){
-        const {customData} = /** @type {EMC<any, AllProps, Element, RAConfig<AllProps, Actions>>} */ (ctx.emc);
+        // ctx.emc is only populated on the attribute (mount-observer) path;
+        // enh.get() / enh.set only pass the registry item -- see def.js.
+        const {customData} = /** @type {EMC<any, AllProps, Element, RAConfig<AllProps, Actions>>} */ (ctx.emc || ctx.config);
         /**
          * @type {RoundaboutOptions}
          */

@@ -9,7 +9,7 @@
  */
 export const emc = {
     enhConfig: {
-        enhKey: 'BeIntl',
+        enhKey: 'beIntl',
         spawn: 'be-intl/be-intl.js',
         withAttrs: {
             base: 'be-intl',
@@ -49,7 +49,7 @@ export const emc = {
             // (Re)build the Intl formatter whenever locale or format settings change.
             onFormattingChange: {
                 ifAllOf: ['locale', 'initialized'],
-                ifKeyIn: ['locale', 'format', 'initialized'],
+                ifKeyIn: ['locale', 'format', 'style', 'currency', 'weekday', 'year', 'month', 'day', 'initialized'],
             },
             // Re-render textContent when the element's value changes.
             formatNumber: {

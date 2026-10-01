@@ -1,6 +1,6 @@
 {
     "enhConfig": {
-        "enhKey": "BeIntl",
+        "enhKey": "beIntl",
         "spawn": "be-intl/be-intl.js",
         "withAttrs": {
             "base": "be-intl",
@@ -49,6 +49,12 @@
                 "ifKeyIn": [
                     "locale",
                     "format",
+                    "style",
+                    "currency",
+                    "weekday",
+                    "year",
+                    "month",
+                    "day",
                     "initialized"
                 ]
             },

@@ -49,6 +49,12 @@
                 "ifKeyIn": [
                     "locale",
                     "format",
+                    "style",
+                    "currency",
+                    "weekday",
+                    "year",
+                    "month",
+                    "day",
                     "initialized"
                 ]
             },

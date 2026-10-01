@@ -97,6 +97,66 @@ The semantic example above involves a lot of keyboard tapping of the letters "be
 🌐-weekday=long 🌐-year=numeric 🌐-month=long 🌐-day=numeric></time>
 ```
 
+## Programmatic attachment (no attribute)
+
+The attribute syntax shown above shines for server-rendered HTML and progressive enhancement:  the markup alone says how each value should be formatted.  But most web development today renders on the client, with a framework (Lit, React, Vue, Svelte, etc.) that already has a JavaScript reference to each element it creates.  In that setting, attaching be-intl programmatically is the better fit:
+
+1.  **A less clunky API.**  Frameworks tend to be awkward about setting arbitrary (let alone emoji) attributes, and quoting JSON inside an attribute, like `be-intl='{ "style": "currency", "currency": "EUR" }'`, is error prone.  Setting `format` to `{style: 'currency', currency: 'EUR'}` is ordinary JavaScript, which TypeScript can check against `Intl.NumberFormatOptions` / `Intl.DateTimeFormatOptions`.  You can also set `locale` directly, which has no attribute equivalent.
+2.  **Less stringifying and parsing.**  With an attribute, the framework serializes the format options to JSON, and be-intl then parses that JSON back into an object.  Setting `format` directly skips both steps.
+3.  **Less overhead monitoring attributes.**  The attribute approach relies on [be-hive](https://github.com/bahrus/be-hive) / [mount-observer](https://github.com/bahrus/mount-observer) watching the DOM for elements that carry (or gain) the attribute, and for changes to its value.  The programmatic approach needs none of that -- `def.js` just registers the enhancement's config, and the enhancement is attached exactly when, and to exactly the elements, your code says.
+
+Both approaches produce the same enhancement, with the same locale resolution and formatting rules, so you can mix them in one app -- attributes for server-rendered islands, programmatic attachment inside client-rendered components.
+
+First register the enhancement's config once:
+
+```JS
+import { defBeIntl } from 'be-intl/def.js';
+const emc = await defBeIntl(document.body); // or a shadow root's host, for a scoped registry
+```
+
+Then set any of these properties:
+
+| Attribute                                   | Property                          | Notes                                                                                  |
+|---------------------------------------------|-----------------------------------|----------------------------------------------------------------------------------------|
+| `be-intl` / `🌐`                            | `format`                          | An `Intl.NumberFormatOptions` / `Intl.DateTimeFormatOptions` object.  A bare attribute is `{}`.  |
+| `be-intl-style`, `-currency`, `-weekday`, `-year`, `-month`, `-day` | `style`, `currency`, `weekday`, `year`, `month`, `day` | Folded into `format`; keys set explicitly in `format` win.  |
+| `be-intl-observe-lang`                      | `observeLang`                     | `true` / `false`.                                                                      |
+| `be-intl-announce`                          | `announce`                        | `true` / `false`.                                                                      |
+| *(none -- `lang`)*                          | `locale`                          | A BCP-47 tag.  Overrides the locale resolved from `lang`.                              |
+
+### Declarative -- via `enh.set`
+
+```JS
+// equivalent to <data value=123456.789 lang="de-DE" be-intl='{ "style": "currency", "currency": "EUR" }'>
+data.enh.set.beIntl.format = {style: 'currency', currency: 'EUR'};
+```
+
+Only the first property needs `.set` -- it's what triggers the attachment.  This can be done before or after `defBeIntl` has been called.
+
+### Imperative -- via `enh.get()`
+
+```JS
+Object.assign(data.enh.get(emc), {
+    locale: 'de-DE',
+    style: 'currency',
+    currency: 'USD',
+});
+```
+
+`data.enh.get(emc)` with no properties at all is equivalent to a bare `be-intl` attribute.
+
+### Changing the formatting later
+
+After the first render, setting `locale`, `format` or one of the semantic properties re-formats the element:
+
+```JS
+data.enh.beIntl.currency = 'EUR';
+```
+
+`format` is compared by reference, so assign a new object rather than mutating the existing one.
+
+See [demo/Programmatic](demo/Programmatic/) for runnable examples.
+
 ## Viewing Demos Locally
 
 1. Install git
